@@ -1,7 +1,7 @@
 package com.example.Job_Portal.repository;
 
-import com.jobportal.backend.entity.User;
-import com.jobportal.backend.enums.Role;
+import com.example.Job_Portal.entity.User;
+import com.example.Job_Portal.enums.Role;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;

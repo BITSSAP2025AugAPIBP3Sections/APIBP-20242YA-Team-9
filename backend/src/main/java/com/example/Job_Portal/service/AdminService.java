@@ -1,13 +1,13 @@
 package com.example.Job_Portal.service;
 
-import com.jobportal.backend.entity.Application;
-import com.jobportal.backend.entity.Job;
-import com.jobportal.backend.entity.User;
-import com.jobportal.backend.enums.ApplicationStatus;
-import com.jobportal.backend.enums.Role;
-import com.jobportal.backend.repository.ApplicationRepository;
-import com.jobportal.backend.repository.JobRepository;
-import com.jobportal.backend.repository.UserRepository;
+import com.example.Job_Portal.entity.Application;
+import com.example.Job_Portal.entity.Job;
+import com.example.Job_Portal.entity.User;
+import com.example.Job_Portal.enums.ApplicationStatus;
+import com.example.Job_Portal.enums.Role;
+import com.example.Job_Portal.repository.ApplicationRepository;
+import com.example.Job_Portal.repository.JobRepository;
+import com.example.Job_Portal.repository.UserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
