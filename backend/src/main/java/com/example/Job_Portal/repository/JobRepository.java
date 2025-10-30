@@ -1,6 +1,6 @@
 package com.example.Job_Portal.repository;
 
-import com.jobportal.backend.entity.Job;
+import com.example.Job_Portal.entity.Job;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;

@@ -1,7 +1,7 @@
 package com.example.Job_Portal.config;
 
-import com.jobportal.backend.security.CustomUserDetailsService;
-import com.jobportal.backend.security.jwt.JwtAuthenticationFilter;
+import com.example.Job_Portal.security.CustomUserDetailsService;
+import com.example.Job_Portal.security.jwt.JwtAuthenticationFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
