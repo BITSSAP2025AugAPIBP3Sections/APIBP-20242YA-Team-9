@@ -10,10 +10,12 @@
 /Users/I528982/Documents/JobPortal/APIBP-20242YA-Team-9/backend/src/main/java/com/example/Job_Portal/dto/AuthResponse.java
 /Users/I528982/Documents/JobPortal/APIBP-20242YA-Team-9/backend/src/main/java/com/example/Job_Portal/service/ApplicantService.java
 /Users/I528982/Documents/JobPortal/APIBP-20242YA-Team-9/backend/src/main/java/com/example/Job_Portal/enums/Role.java
+/Users/I528982/Documents/JobPortal/APIBP-20242YA-Team-9/backend/src/main/java/com/example/Job_Portal/service/ProfileService.java
 /Users/I528982/Documents/JobPortal/APIBP-20242YA-Team-9/backend/src/main/java/com/example/Job_Portal/config/WebConfig.java
 /Users/I528982/Documents/JobPortal/APIBP-20242YA-Team-9/backend/src/main/java/com/example/Job_Portal/dto/RegisterRequest.java
 /Users/I528982/Documents/JobPortal/APIBP-20242YA-Team-9/backend/src/main/java/com/example/Job_Portal/entity/Job.java
 /Users/I528982/Documents/JobPortal/APIBP-20242YA-Team-9/backend/src/main/java/com/example/Job_Portal/config/OpenAPIConfig.java
+/Users/I528982/Documents/JobPortal/APIBP-20242YA-Team-9/backend/src/main/java/com/example/Job_Portal/service/JobService.java
 /Users/I528982/Documents/JobPortal/APIBP-20242YA-Team-9/backend/src/main/java/com/example/Job_Portal/service/EmailService.java
 /Users/I528982/Documents/JobPortal/APIBP-20242YA-Team-9/backend/src/main/java/com/example/Job_Portal/repository/UserRepository.java
 /Users/I528982/Documents/JobPortal/APIBP-20242YA-Team-9/backend/src/main/java/com/example/Job_Portal/repository/ApplicationRepository.java
