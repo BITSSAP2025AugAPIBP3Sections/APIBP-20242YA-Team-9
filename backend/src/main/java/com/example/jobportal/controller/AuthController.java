@@ -1,0 +1,69 @@
+package com.example.jobportal.controller;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.*;
+
+import com.example.jobportal.dto.AuthResponse;
+import com.example.jobportal.dto.LoginRequest;
+import com.example.jobportal.dto.RegisterRequest;
+import com.example.jobportal.entity.User;
+import com.example.jobportal.repository.UserRepository;
+import com.example.jobportal.security.jwt.JwtUtils;
+import com.example.jobportal.service.EmailService;
+
+import java.util.Collections;
+import java.util.Map;
+import java.util.Optional;
+
+@RestController
+@RequestMapping("/api/auth")
+public class AuthController {
+
+    @Autowired private UserRepository userRepo;
+    @Autowired private PasswordEncoder passwordEncoder;
+    @Autowired private JwtUtils jwtUtils;
+    @Autowired private EmailService emailService;
+
+    @PostMapping("/register")
+    public ResponseEntity<?> register(@Validated @RequestBody RegisterRequest req) {
+        if (userRepo.findByEmail(req.getEmail()).isPresent()) {
+            return ResponseEntity.badRequest().body(Collections.singletonMap("message", "Email already exists"));
+        }
+        User user = new User(
+                req.getName(),
+                req.getEmail(),
+                passwordEncoder.encode(req.getPassword()),
+                req.getRole()
+        );
+        userRepo.save(user);
+        emailService.sendRegistrationEmail(user.getEmail(), user.getName());
+        return ResponseEntity.ok(Collections.singletonMap("message", "User registered successfully"));
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<?> login(@Validated @RequestBody LoginRequest req) {
+        Optional<User> userOpt = userRepo.findByEmail(req.getEmail());
+        if (userOpt.isEmpty() ||
+                !passwordEncoder.matches(req.getPassword(), userOpt.get().getPassword())) {
+            return ResponseEntity
+                    .status(401)
+                    .body(Collections.singletonMap("message", "Invalid email or password"));
+        }
+        User user = userOpt.get();
+        String token = jwtUtils.generateToken(user.getEmail(), user.getId(), user.getRole());
+        return ResponseEntity.ok(Collections.unmodifiableMap(
+            Map.of(
+                "token", token,
+                "user", Map.of(
+                    "name", user.getName(),
+                    "role", user.getRole(),
+                            "id",user.getId(),
+                            "bio", user.getBio() == null ? "" : user.getBio()
+                )
+            )
+        ));
+    }
+}
