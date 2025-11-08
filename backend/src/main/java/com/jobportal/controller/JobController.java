@@ -32,11 +32,31 @@ public class JobController {
     // Create a new job posting (COMPANY only)
     @PostMapping
     @PreAuthorize("hasRole('COMPANY')")
-    public ResponseEntity<Job> createJob(
+    public ResponseEntity<Map<String, Object>> createJob(
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @Valid @RequestBody Job job) {
         Job createdJob = jobService.createJob(userDetails.getUser(), job);
-        return ResponseEntity.ok(createdJob);
+// Format the date as ISO-8601 string (2023-05-01T00:00:00Z format)
+        String formattedDate = null;
+        if (createdJob.getPostedAt() != null) {
+            formattedDate = createdJob.getPostedAt().toString().replace("T", "T").concat("Z");
+        }
+        Map<String, Object> jobMap = new HashMap<>();
+        jobMap.put("id", String.valueOf(createdJob.getId()));
+        jobMap.put("title", createdJob.getTitle());
+        jobMap.put("company", Map.of(
+                "name", createdJob.getCompany().getName(),
+                "bio", createdJob.getCompany().getBio() != null ? createdJob.getCompany().getBio() : "No Description"
+        ));
+        jobMap.put("location", createdJob.getLocation());
+        jobMap.put("salaryRange", createdJob.getSalaryRange());
+        jobMap.put("description", createdJob.getDescription());
+        jobMap.put("postedAt", formattedDate);
+        jobMap.put("requirements", createdJob.getRequirements());
+        jobMap.put("responsibilities", createdJob.getResponsibilities());
+        jobMap.put("applicationsCount", jobService.getApplicationsCountForJob(createdJob.getId()));
+        jobMap.put("active", createdJob.isActive());
+        return ResponseEntity.ok(jobMap);
     }
 
     // Get all active jobs (Public)
