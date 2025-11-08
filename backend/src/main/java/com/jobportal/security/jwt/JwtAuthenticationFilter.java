@@ -1,4 +1,4 @@
-package com.example.jobportal.security.jwt;
+package com.jobportal.security.jwt;
 
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.FilterChain;
@@ -17,9 +17,9 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import com.example.jobportal.entity.User;
-import com.example.jobportal.repository.UserRepository;
-import com.example.jobportal.security.CustomUserDetails;
+import com.jobportal.entity.User;
+import com.jobportal.repository.UserRepository;
+import com.jobportal.security.CustomUserDetails;
 
 import java.io.IOException;
 import java.util.Collections;

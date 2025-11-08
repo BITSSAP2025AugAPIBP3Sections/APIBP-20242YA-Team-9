@@ -1,4 +1,4 @@
-package com.example.jobportal.security.jwt;
+package com.jobportal.security.jwt;
 
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.JwtException;
@@ -6,7 +6,7 @@ import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import com.example.jobportal.enums.Role;
+import com.jobportal.enums.Role;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

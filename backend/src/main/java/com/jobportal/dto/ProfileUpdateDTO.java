@@ -1,4 +1,4 @@
-package com.example.jobportal.dto;
+package com.jobportal.dto;
 
 import jakarta.validation.constraints.Size;
 

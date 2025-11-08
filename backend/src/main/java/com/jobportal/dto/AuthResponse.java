@@ -1,4 +1,4 @@
-package com.example.jobportal.dto;
+package com.jobportal.dto;
 
 public class AuthResponse {
     private String token;

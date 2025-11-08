@@ -1,4 +1,4 @@
-package com.example.jobportal.enums;
+package com.jobportal.enums;
 
 public enum Role {
     APPLICANT,

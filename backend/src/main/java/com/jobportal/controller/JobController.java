@@ -1,4 +1,4 @@
-package com.example.jobportal.controller;
+package com.jobportal.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -6,11 +6,11 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-import com.example.jobportal.dto.ApplicationStatusDTO;
-import com.example.jobportal.entity.Application;
-import com.example.jobportal.entity.Job;
-import com.example.jobportal.security.CustomUserDetails;
-import com.example.jobportal.service.JobService;
+import com.jobportal.dto.ApplicationStatusDTO;
+import com.jobportal.entity.Application;
+import com.jobportal.entity.Job;
+import com.jobportal.security.CustomUserDetails;
+import com.jobportal.service.JobService;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

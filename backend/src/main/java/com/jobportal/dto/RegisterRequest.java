@@ -1,6 +1,6 @@
-package com.example.jobportal.dto;
+package com.jobportal.dto;
 
-import com.example.jobportal.enums.Role;
+import com.jobportal.enums.Role;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;

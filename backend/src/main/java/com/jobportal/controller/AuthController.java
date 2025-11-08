@@ -1,4 +1,4 @@
-package com.example.jobportal.controller;
+package com.jobportal.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -6,13 +6,13 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import com.example.jobportal.dto.AuthResponse;
-import com.example.jobportal.dto.LoginRequest;
-import com.example.jobportal.dto.RegisterRequest;
-import com.example.jobportal.entity.User;
-import com.example.jobportal.repository.UserRepository;
-import com.example.jobportal.security.jwt.JwtUtils;
-import com.example.jobportal.service.EmailService;
+import com.jobportal.dto.AuthResponse;
+import com.jobportal.dto.LoginRequest;
+import com.jobportal.dto.RegisterRequest;
+import com.jobportal.entity.User;
+import com.jobportal.repository.UserRepository;
+import com.jobportal.security.jwt.JwtUtils;
+import com.jobportal.service.EmailService;
 
 import java.util.Collections;
 import java.util.Map;
@@ -39,7 +39,7 @@ public class AuthController {
                 req.getRole()
         );
         userRepo.save(user);
-        emailService.sendRegistrationEmail(user.getEmail(), user.getName());
+//        emailService.sendRegistrationEmail(user.getEmail(), user.getName());
         return ResponseEntity.ok(Collections.singletonMap("message", "User registered successfully"));
     }
 

@@ -1,4 +1,4 @@
-package com.example.jobportal.controller;
+package com.jobportal.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -13,11 +13,11 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.example.jobportal.entity.Application;
-import com.example.jobportal.entity.Job;
-import com.example.jobportal.entity.User;
-import com.example.jobportal.security.CustomUserDetails;
-import com.example.jobportal.service.ApplicantService;
+import com.jobportal.entity.Application;
+import com.jobportal.entity.Job;
+import com.jobportal.entity.User;
+import com.jobportal.security.CustomUserDetails;
+import com.jobportal.service.ApplicantService;
 
 import java.io.IOException;
 import java.net.MalformedURLException;

@@ -1,10 +1,10 @@
-package com.example.jobportal.entity;
+package com.jobportal.entity;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import java.time.LocalDateTime;
 
-import com.example.jobportal.enums.ApplicationStatus;
+import com.jobportal.enums.ApplicationStatus;
 
 @Entity
 @Table(name = "applications")
