@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="8d0fa5e0-8f40-4edc-8240-d254f130e8ee" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/backend/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/backend/pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/example/Job_Portal/controller/AdminController.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/example/Job_Portal/controller/ApplicantController.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/example/Job_Portal/controller/AuthController.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/example/Job_Portal/controller/JobController.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/example/Job_Portal/controller/ProfileController.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/example/jobportal/JobPortalApplication.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/jobportal/JobPortalApplication.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/example/jobportal/config/ApiConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/jobportal/config/ApiConfig.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/example/jobportal/config/OpenAPIConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/jobportal/config/OpenAPIConfig.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/example/jobportal/config/SecurityConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/jobportal/config/SecurityConfig.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/example/jobportal/config/WebConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/jobportal/config/WebConfig.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/example/jobportal/controller/AdminController.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/jobportal/controller/AdminController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/example/jobportal/controller/ApplicantController.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/jobportal/controller/ApplicantController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/example/jobportal/controller/AuthController.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/jobportal/controller/AuthController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/example/jobportal/controller/JobController.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/jobportal/controller/JobController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/example/jobportal/controller/ProfileController.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/jobportal/controller/ProfileController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/example/jobportal/dto/ApplicationStatusDTO.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/jobportal/dto/ApplicationStatusDTO.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/example/jobportal/dto/AuthResponse.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/jobportal/dto/AuthResponse.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/example/jobportal/dto/LoginRequest.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/jobportal/dto/LoginRequest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/example/jobportal/dto/ProfileUpdateDTO.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/jobportal/dto/ProfileUpdateDTO.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/example/jobportal/dto/RegisterRequest.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/jobportal/dto/RegisterRequest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/example/jobportal/entity/Application.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/jobportal/entity/Application.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/example/jobportal/entity/Job.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/jobportal/entity/Job.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/example/jobportal/entity/User.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/jobportal/entity/User.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/example/jobportal/enums/ApplicationStatus.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/jobportal/enums/ApplicationStatus.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/example/jobportal/enums/Role.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/jobportal/enums/Role.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/example/jobportal/repository/ApplicationRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/jobportal/repository/ApplicationRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/example/jobportal/repository/JobRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/jobportal/repository/JobRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/example/jobportal/repository/UserRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/jobportal/repository/UserRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/example/jobportal/security/CustomUserDetails.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/jobportal/security/CustomUserDetails.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/example/jobportal/security/CustomUserDetailsService.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/jobportal/security/CustomUserDetailsService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/example/jobportal/security/jwt/JwtAuthenticationFilter.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/jobportal/security/jwt/JwtAuthenticationFilter.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/example/jobportal/security/jwt/JwtUtils.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/jobportal/security/jwt/JwtUtils.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/example/jobportal/service/AdminService.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/jobportal/service/AdminService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/example/jobportal/service/ApplicantService.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/jobportal/service/ApplicantService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/example/jobportal/service/EmailService.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/jobportal/service/EmailService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/example/jobportal/service/JobService.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/jobportal/service/JobService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/example/jobportal/service/ProfileService.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/jobportal/service/ProfileService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/target/classes/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/application.properties" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/target/maven-status/maven-compiler-plugin/compile/default-compile/createdFiles.lst" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/maven-status/maven-compiler-plugin/compile/default-compile/createdFiles.lst" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/target/maven-status/maven-compiler-plugin/compile/default-compile/inputFiles.lst" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/maven-status/maven-compiler-plugin/compile/default-compile/inputFiles.lst" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPEN&quot;,
+    &quot;assignee&quot;: &quot;roy2002&quot;
+  }
+}</component>
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/BITSSAP2025AugAPIBP3Sections/APIBP-20242YA-Team-9.git&quot;,
+    &quot;accountId&quot;: &quot;d452335b-1ca4-4e87-9f81-b640c59ae218&quot;
+  }
+}</component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 8
+}</component>
+  <component name="ProjectId" id="34epSvdKlZLzW7ECUleKY5Wgh7E" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
+    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/Users/I528973/Downloads/API/APIBP-20242YA-Team-9&quot;
+  }
+}</component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="8d0fa5e0-8f40-4edc-8240-d254f130e8ee" name="Changes" comment="" />
+      <created>1761583894468</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1761583894468</updated>
+    </task>
+    <servers />
+  </component>
+</project>

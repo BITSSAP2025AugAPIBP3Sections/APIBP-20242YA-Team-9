@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="RemoteRepositoriesConfiguration">
+    <remote-repository>
+      <option name="id" value="artifactory.build.milestones" />
+      <option name="name" value="Artifactory Milestones" />
+      <option name="url" value="https://common.repositories.cloud.sap/artifactory/build.milestones" />
+    </remote-repository>
+    <remote-repository>
+      <option name="id" value="central" />
+      <option name="name" value="Central Repository" />
+      <option name="url" value="https://repo.maven.apache.org/maven2" />
+    </remote-repository>
+    <remote-repository>
+      <option name="id" value="artifactory.build.releases" />
+      <option name="name" value="Artifactory Build Releases" />
+      <option name="url" value="https://common.repositories.cloud.sap/build.releases/" />
+    </remote-repository>
+    <remote-repository>
+      <option name="id" value="artifactory.dmc-maven-releases" />
+      <option name="name" value="SAP DMC Internal Maven Releases" />
+      <option name="url" value="https://common.repositories.cloud.sap/dmc-maven-releases" />
+    </remote-repository>
+    <remote-repository>
+      <option name="id" value="sf.thirdparty.ship.local.maven" />
+      <option name="name" value="SF Third Party Ship Releases" />
+      <option name="url" value="https://common.repositories.cloud.sap/sf-thirdparty-ship-local-maven" />
+    </remote-repository>
+    <remote-repository>
+      <option name="id" value="sf.thirdparty.noship.local.maven" />
+      <option name="name" value="SF Third Party No Ship Releases" />
+      <option name="url" value="https://common.repositories.cloud.sap/sf-thirdparty-noship-local-maven" />
+    </remote-repository>
+    <remote-repository>
+      <option name="id" value="central" />
+      <option name="name" value="Maven Central repository" />
+      <option name="url" value="https://repo1.maven.org/maven2" />
+    </remote-repository>
+    <remote-repository>
+      <option name="id" value="jboss.community" />
+      <option name="name" value="JBoss Community repository" />
+      <option name="url" value="https://repository.jboss.org/nexus/content/repositories/public/" />
+    </remote-repository>
+    <remote-repository>
+      <option name="id" value="deploy-milestones-cx-commerce-maven" />
+      <option name="name" value="Artifactory deploy-milestones-cx-commerce-maven" />
+      <option name="url" value="https://common.repositories.cloud.sap:443/artifactory/deploy-milestones-cx-commerce-maven" />
+    </remote-repository>
+    <remote-repository>
+      <option name="id" value="artifactory.compliant-releases" />
+      <option name="name" value="Artifactory SAP Compliant Releases" />
+      <option name="url" value="https://common.repositories.cloud.sap/artifactory/compliant-releases" />
+    </remote-repository>
+  </component>
+</project>
