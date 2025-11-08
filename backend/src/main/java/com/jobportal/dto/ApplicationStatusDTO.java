@@ -1,6 +1,6 @@
-package com.example.jobportal.dto;
+package com.jobportal.dto;
 
-import com.example.jobportal.enums.ApplicationStatus;
+import com.jobportal.enums.ApplicationStatus;
 
 public class ApplicationStatusDTO {
     private ApplicationStatus status;

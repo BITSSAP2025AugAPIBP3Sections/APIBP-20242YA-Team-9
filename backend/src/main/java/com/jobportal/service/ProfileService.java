@@ -1,12 +1,12 @@
-package com.example.jobportal.service;
+package com.jobportal.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.example.jobportal.dto.ProfileUpdateDTO;
-import com.example.jobportal.entity.User;
-import com.example.jobportal.repository.UserRepository;
+import com.jobportal.dto.ProfileUpdateDTO;
+import com.jobportal.entity.User;
+import com.jobportal.repository.UserRepository;
 
 import java.util.HashMap;
 import java.util.Map;

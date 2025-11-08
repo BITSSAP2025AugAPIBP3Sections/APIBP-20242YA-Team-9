@@ -1,4 +1,4 @@
-package com.example.jobportal.controller;
+package com.jobportal.controller;
 
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -7,9 +7,9 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-import com.example.jobportal.dto.ProfileUpdateDTO;
-import com.example.jobportal.security.CustomUserDetails;
-import com.example.jobportal.service.ProfileService;
+import com.jobportal.dto.ProfileUpdateDTO;
+import com.jobportal.security.CustomUserDetails;
+import com.jobportal.service.ProfileService;
 
 import java.util.Map;
 

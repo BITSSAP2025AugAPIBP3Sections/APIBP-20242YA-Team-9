@@ -1,4 +1,4 @@
-package com.example.jobportal.config;
+package com.jobportal.config;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,8 +20,8 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import com.example.jobportal.security.CustomUserDetailsService;
-import com.example.jobportal.security.jwt.JwtAuthenticationFilter;
+import com.jobportal.security.CustomUserDetailsService;
+import com.jobportal.security.jwt.JwtAuthenticationFilter;
 
 import static org.springframework.security.config.Customizer.withDefaults;
 

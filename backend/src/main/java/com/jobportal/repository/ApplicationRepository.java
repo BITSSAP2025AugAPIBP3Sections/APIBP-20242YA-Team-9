@@ -1,12 +1,12 @@
-package com.example.jobportal.repository;
+package com.jobportal.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import com.example.jobportal.entity.Application;
-import com.example.jobportal.entity.Job;
-import com.example.jobportal.entity.User;
-import com.example.jobportal.enums.ApplicationStatus;
+import com.jobportal.entity.Application;
+import com.jobportal.entity.Job;
+import com.jobportal.entity.User;
+import com.jobportal.enums.ApplicationStatus;
 
 import java.util.List;
 import java.util.Optional;

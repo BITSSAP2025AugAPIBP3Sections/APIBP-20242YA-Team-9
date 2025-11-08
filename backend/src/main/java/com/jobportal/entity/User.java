@@ -1,9 +1,9 @@
-package com.example.jobportal.entity;
+package com.jobportal.entity;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
-import com.example.jobportal.enums.Role;
+import com.jobportal.enums.Role;
 
 @Entity
 @Table(name = "users")

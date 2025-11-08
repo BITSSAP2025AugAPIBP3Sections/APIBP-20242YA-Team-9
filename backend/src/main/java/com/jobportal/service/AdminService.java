@@ -1,4 +1,4 @@
-package com.example.jobportal.service;
+package com.jobportal.service;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -6,14 +6,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.example.jobportal.entity.Application;
-import com.example.jobportal.entity.Job;
-import com.example.jobportal.entity.User;
-import com.example.jobportal.enums.ApplicationStatus;
-import com.example.jobportal.enums.Role;
-import com.example.jobportal.repository.ApplicationRepository;
-import com.example.jobportal.repository.JobRepository;
-import com.example.jobportal.repository.UserRepository;
+import com.jobportal.entity.Application;
+import com.jobportal.entity.Job;
+import com.jobportal.entity.User;
+import com.jobportal.enums.ApplicationStatus;
+import com.jobportal.enums.Role;
+import com.jobportal.repository.ApplicationRepository;
+import com.jobportal.repository.JobRepository;
+import com.jobportal.repository.UserRepository;
 
 import java.util.ArrayList;
 import java.util.List;

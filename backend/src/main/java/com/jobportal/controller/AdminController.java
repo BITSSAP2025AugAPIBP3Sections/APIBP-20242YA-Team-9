@@ -1,4 +1,4 @@
-package com.example.jobportal.controller;
+package com.jobportal.controller;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -7,10 +7,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import com.example.jobportal.entity.Application;
-import com.example.jobportal.entity.Job;
-import com.example.jobportal.entity.User;
-import com.example.jobportal.service.AdminService;
+import com.jobportal.entity.Application;
+import com.jobportal.entity.Job;
+import com.jobportal.entity.User;
+import com.jobportal.service.AdminService;
 
 import java.util.List;
 import java.util.Map;

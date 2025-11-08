@@ -1,4 +1,4 @@
-package com.example.jobportal.config;
+package com.jobportal.config;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.lang.NonNull;
