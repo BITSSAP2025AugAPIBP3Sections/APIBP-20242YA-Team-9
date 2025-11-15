@@ -1,11 +1,16 @@
 package com.jobportal.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 
+import com.fasterxml.jackson.databind.exc.InvalidFormatException;
+import com.fasterxml.jackson.databind.exc.MismatchedInputException;
 import com.jobportal.dto.ApplicationStatusDTO;
 import com.jobportal.entity.Application;
 import com.jobportal.entity.Job;
@@ -29,82 +34,189 @@ public class JobController {
     @Autowired
     private JobService jobService;
 
+    // Handle JSON parsing errors
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<Map<String, Object>> handleHttpMessageNotReadable(HttpMessageNotReadableException ex) {
+        Map<String, Object> errorResponse = new HashMap<>();
+        errorResponse.put("status", "error");
+        
+        String message = "Invalid JSON format or data type mismatch";
+        Throwable cause = ex.getCause();
+        
+        if (cause instanceof InvalidFormatException) {
+            InvalidFormatException ife = (InvalidFormatException) cause;
+            String fieldName = ife.getPath().isEmpty() ? "unknown" : 
+                ife.getPath().get(ife.getPath().size() - 1).getFieldName();
+            message = String.format("Invalid value for field '%s'. Expected %s but received: %s", 
+                fieldName, ife.getTargetType().getSimpleName(), ife.getValue());
+        } else if (cause instanceof MismatchedInputException) {
+            MismatchedInputException mie = (MismatchedInputException) cause;
+            String fieldName = mie.getPath().isEmpty() ? "unknown" : 
+                mie.getPath().get(mie.getPath().size() - 1).getFieldName();
+            message = String.format("Missing or invalid field '%s'. Expected %s", 
+                fieldName, mie.getTargetType().getSimpleName());
+        }
+        
+        errorResponse.put("message", message);
+        return ResponseEntity.badRequest().body(errorResponse);
+    }
+
+    // Handle validation errors
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<Map<String, Object>> handleValidationExceptions(MethodArgumentNotValidException ex) {
+        Map<String, Object> errorResponse = new HashMap<>();
+        Map<String, String> errors = new HashMap<>();
+        
+        ex.getBindingResult().getAllErrors().forEach((error) -> {
+            String fieldName = ((org.springframework.validation.FieldError) error).getField();
+            String errorMessage = error.getDefaultMessage();
+            errors.put(fieldName, errorMessage);
+        });
+        
+        errorResponse.put("status", "error");
+        errorResponse.put("message", "Validation failed for one or more fields");
+        errorResponse.put("errors", errors);
+        
+        return ResponseEntity.badRequest().body(errorResponse);
+    }
+
     // Create a new job posting (COMPANY only)
     @PostMapping
     @PreAuthorize("hasRole('COMPANY')")
     public ResponseEntity<Map<String, Object>> createJob(
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @Valid @RequestBody Job job) {
-        Job createdJob = jobService.createJob(userDetails.getUser(), job);
-// Format the date as ISO-8601 string (2023-05-01T00:00:00Z format)
-        String formattedDate = null;
-        if (createdJob.getPostedAt() != null) {
-            formattedDate = createdJob.getPostedAt().toString().replace("T", "T").concat("Z");
+        try {
+            // Validate required fields
+            if (job.getTitle() == null || job.getTitle().trim().isEmpty()) {
+                Map<String, Object> errorResponse = new HashMap<>();
+                errorResponse.put("status", "error");
+                errorResponse.put("message", "Job title is required and cannot be empty");
+                return ResponseEntity.badRequest().body(errorResponse);
+            }
+            
+            if (job.getDescription() == null || job.getDescription().trim().isEmpty()) {
+                Map<String, Object> errorResponse = new HashMap<>();
+                errorResponse.put("status", "error");
+                errorResponse.put("message", "Job description is required and cannot be empty");
+                return ResponseEntity.badRequest().body(errorResponse);
+            }
+            
+            if (job.getLocation() == null || job.getLocation().trim().isEmpty()) {
+                Map<String, Object> errorResponse = new HashMap<>();
+                errorResponse.put("status", "error");
+                errorResponse.put("message", "Job location is required and cannot be empty");
+                return ResponseEntity.badRequest().body(errorResponse);
+            }
+            
+            Job createdJob = jobService.createJob(userDetails.getUser(), job);
+            
+            // Format the date as ISO-8601 string (2023-05-01T00:00:00Z format)
+            String formattedDate = null;
+            if (createdJob.getPostedAt() != null) {
+                formattedDate = createdJob.getPostedAt().toString().replace("T", "T").concat("Z");
+            }
+            
+            Map<String, Object> jobData = new HashMap<>();
+            jobData.put("id", String.valueOf(createdJob.getId()));
+            jobData.put("title", createdJob.getTitle());
+            jobData.put("company", Map.of(
+                    "name", createdJob.getCompany().getName(),
+                    "bio", createdJob.getCompany().getBio() != null ? createdJob.getCompany().getBio() : "No Description"
+            ));
+            jobData.put("location", createdJob.getLocation());
+            jobData.put("salaryRange", createdJob.getSalaryRange());
+            jobData.put("description", createdJob.getDescription());
+            jobData.put("postedAt", formattedDate);
+            jobData.put("requirements", createdJob.getRequirements());
+            jobData.put("responsibilities", createdJob.getResponsibilities());
+            jobData.put("applicationsCount", jobService.getApplicationsCountForJob(createdJob.getId()));
+            jobData.put("active", createdJob.isActive());
+            
+            Map<String, Object> response = new HashMap<>();
+            response.put("status", "success");
+            response.put("message", "Job created successfully");
+            response.put("data", jobData);
+            response.put("action", "create");
+            response.put("timestamp", java.time.Instant.now().toString());
+            
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("status", "error");
+            errorResponse.put("message", "Invalid request data: " + e.getMessage());
+            return ResponseEntity.badRequest().body(errorResponse);
         }
-        Map<String, Object> jobMap = new HashMap<>();
-        jobMap.put("id", String.valueOf(createdJob.getId()));
-        jobMap.put("title", createdJob.getTitle());
-        jobMap.put("company", Map.of(
-                "name", createdJob.getCompany().getName(),
-                "bio", createdJob.getCompany().getBio() != null ? createdJob.getCompany().getBio() : "No Description"
-        ));
-        jobMap.put("location", createdJob.getLocation());
-        jobMap.put("salaryRange", createdJob.getSalaryRange());
-        jobMap.put("description", createdJob.getDescription());
-        jobMap.put("postedAt", formattedDate);
-        jobMap.put("requirements", createdJob.getRequirements());
-        jobMap.put("responsibilities", createdJob.getResponsibilities());
-        jobMap.put("applicationsCount", jobService.getApplicationsCountForJob(createdJob.getId()));
-        jobMap.put("active", createdJob.isActive());
-        return ResponseEntity.ok(jobMap);
     }
 
     // Get all active jobs (Public)
     @GetMapping
-    public ResponseEntity<List<Map<String, Object>>> getAllActiveJobs(
+    public ResponseEntity<Map<String, Object>> getAllActiveJobs(
             @RequestParam(required = false) String location,
             @RequestParam(required = false) String title,
             @RequestParam(required = false) String salaryRange) {
-        List<Job> jobs = jobService.searchJobs(location, title, salaryRange);
-        List<Map<String, Object>> response = jobs.stream()
-            .sorted((j1, j2) -> {
-                if (j1.getPostedAt() == null && j2.getPostedAt() == null) return 0;
-                if (j1.getPostedAt() == null) return 1;
-                if (j2.getPostedAt() == null) return -1;
-                return j2.getPostedAt().compareTo(j1.getPostedAt()); // Descending order
-            })
-            .map(job -> {
-                // Format the date as ISO-8601 string (2023-05-01T00:00:00Z format)
-                String formattedDate = null;
-                if (job.getPostedAt() != null) {
-                    // Convert LocalDateTime to proper ISO-8601 format with Z suffix for UTC
-                    formattedDate = job.getPostedAt().toString().replace("T", "T").concat("Z");
-                }
+        try {
+            List<Job> jobs = jobService.searchJobs(location, title, salaryRange);
+            List<Map<String, Object>> jobsList = jobs.stream()
+                .sorted((j1, j2) -> {
+                    if (j1.getPostedAt() == null && j2.getPostedAt() == null) return 0;
+                    if (j1.getPostedAt() == null) return 1;
+                    if (j2.getPostedAt() == null) return -1;
+                    return j2.getPostedAt().compareTo(j1.getPostedAt()); // Descending order
+                })
+                .map(job -> {
+                    // Format the date as ISO-8601 string (2023-05-01T00:00:00Z format)
+                    String formattedDate = null;
+                    if (job.getPostedAt() != null) {
+                        // Convert LocalDateTime to proper ISO-8601 format with Z suffix for UTC
+                        formattedDate = job.getPostedAt().toString().replace("T", "T").concat("Z");
+                    }
 
-                Map<String, Object> jobMap = new HashMap<>();
-                jobMap.put("id", String.valueOf(job.getId()));
-                jobMap.put("title", job.getTitle());
-                jobMap.put("company", Map.of(
-                    "name", job.getCompany().getName(),
-                    "bio", job.getCompany().getBio() != null ? job.getCompany().getBio() : "No Description"
-                ));
-                jobMap.put("location", job.getLocation());
-                jobMap.put("salaryRange", job.getSalaryRange());
-                jobMap.put("description", job.getDescription());
-                jobMap.put("postedAt", formattedDate);
-                jobMap.put("requirements", job.getRequirements());
-                jobMap.put("responsibilities", job.getResponsibilities());
-                jobMap.put("applicationsCount", jobService.getApplicationsCountForJob(job.getId()));
-                jobMap.put("active", job.isActive());
-                
-                return jobMap;
-            }).toList();
-        return ResponseEntity.ok(response);
+                    Map<String, Object> jobMap = new HashMap<>();
+                    jobMap.put("id", String.valueOf(job.getId()));
+                    jobMap.put("title", job.getTitle());
+                    jobMap.put("company", Map.of(
+                        "name", job.getCompany().getName(),
+                        "bio", job.getCompany().getBio() != null ? job.getCompany().getBio() : "No Description"
+                    ));
+                    jobMap.put("location", job.getLocation());
+                    jobMap.put("salaryRange", job.getSalaryRange());
+                    jobMap.put("description", job.getDescription());
+                    jobMap.put("postedAt", formattedDate);
+                    jobMap.put("requirements", job.getRequirements());
+                    jobMap.put("responsibilities", job.getResponsibilities());
+                    jobMap.put("applicationsCount", jobService.getApplicationsCountForJob(job.getId()));
+                    jobMap.put("active", job.isActive());
+                    
+                    return jobMap;
+                }).toList();
+            
+            Map<String, Object> response = new HashMap<>();
+            response.put("status", "success");
+            response.put("message", "Jobs retrieved successfully");
+            response.put("data", jobsList);
+            response.put("count", jobsList.size());
+            response.put("filters", Map.of(
+                "location", location != null ? location : "all",
+                "title", title != null ? title : "all",
+                "salaryRange", salaryRange != null ? salaryRange : "all"
+            ));
+            response.put("timestamp", java.time.Instant.now().toString());
+            
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            Map<String, Object> response = new HashMap<>();
+            response.put("status", "error");
+            response.put("message", "Failed to retrieve jobs: " + e.getMessage());
+            response.put("timestamp", java.time.Instant.now().toString());
+            
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
     }
 
     // Get job by ID (Public)
     @GetMapping("/{id}")
-    public ResponseEntity<?> getJobById(@PathVariable Long id) {
+    public ResponseEntity<Map<String, Object>> getJobById(@PathVariable Long id) {
         return jobService.getJobById(id)
                 .map(job -> {
                     // Format the date as ISO-8601 string
@@ -113,7 +225,7 @@ public class JobController {
                         formattedDate = job.getPostedAt().toString().replace("T", "T").concat("Z");
                     }
                     
-                    Map<String, Object> response = Map.of(
+                    Map<String, Object> jobData = Map.of(
                         "id", String.valueOf(job.getId()),
                         "title", job.getTitle(),
                         "company", Map.of(
@@ -129,23 +241,50 @@ public class JobController {
                         "applicationsCount", jobService.getApplicationsCountForJob(job.getId())
                     );
                     
+                    Map<String, Object> response = new HashMap<>();
+                    response.put("status", "success");
+                    response.put("message", "Job retrieved successfully");
+                    response.put("data", jobData);
+                    response.put("jobId", id);
+                    response.put("timestamp", java.time.Instant.now().toString());
+                    
                     return ResponseEntity.ok(response);
                 })
-                .orElse(ResponseEntity.notFound().build());
+                .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of(
+                    "status", "error",
+                    "message", "Job not found",
+                    "jobId", id,
+                    "timestamp", java.time.Instant.now().toString()
+                )));
     }
 
     // Update job posting (COMPANY only, must be owner)
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('COMPANY')")
-    public ResponseEntity<?> updateJob(
+    public ResponseEntity<Map<String, Object>> updateJob(
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @PathVariable Long id,
             @Valid @RequestBody Job job) {
         try {
             Job updatedJob = jobService.updateJob(userDetails.getUser().getId(), id, job);
-            return ResponseEntity.ok(updatedJob);
+            
+            Map<String, Object> response = new HashMap<>();
+            response.put("status", "success");
+            response.put("message", "Job updated successfully");
+            response.put("data", updatedJob);
+            response.put("jobId", id);
+            response.put("action", "update");
+            response.put("timestamp", java.time.Instant.now().toString());
+            
+            return ResponseEntity.ok(response);
         } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            Map<String, Object> response = new HashMap<>();
+            response.put("status", "error");
+            response.put("message", "Failed to update job: " + e.getMessage());
+            response.put("jobId", id);
+            response.put("timestamp", java.time.Instant.now().toString());
+            
+            return ResponseEntity.badRequest().body(response);
         }
     }
 
@@ -157,65 +296,133 @@ public class JobController {
             @PathVariable Long id) {
         try {
             jobService.deleteJob(userDetails.getUser().getId(), id);
-            return ResponseEntity.ok().build();
+            
+            Map<String, Object> successResponse = new HashMap<>();
+            successResponse.put("status", "success");
+            successResponse.put("message", String.format("Job with ID %d has been successfully deactivated (marked as inactive)", id));
+            successResponse.put("jobId", id);
+            successResponse.put("action", "soft_delete");
+            successResponse.put("note", "Job is now hidden from public listings but data is preserved");
+            successResponse.put("timestamp", java.time.Instant.now().toString());
+            
+            return ResponseEntity.ok(successResponse);
         } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("status", "error");
+            errorResponse.put("message", "Failed to delete job: " + e.getMessage());
+            errorResponse.put("jobId", id);
+            errorResponse.put("timestamp", java.time.Instant.now().toString());
+            return ResponseEntity.badRequest().body(errorResponse);
         }
     }
 
     // Get company's job postings (COMPANY only)
     @GetMapping("/company")
     @PreAuthorize("hasRole('COMPANY')")
-    public ResponseEntity<List<Map<String, Object>>> getCompanyJobs(
+    public ResponseEntity<Map<String, Object>> getCompanyJobs(
             @AuthenticationPrincipal CustomUserDetails userDetails) {
-        List<Job> jobs = jobService.getJobsByCompany(userDetails.getUser().getId());
-        List<Map<String, Object>> response = jobs.stream().map(job -> Map.ofEntries(
-            Map.entry("id", String.valueOf(job.getId())),
-            Map.entry("title", job.getTitle()),
-            Map.entry("company", Map.of(
-                "name", job.getCompany().getName(),
-                "bio", job.getCompany().getBio() != null ? job.getCompany().getBio() : "No Description"
-            )),
-            Map.entry("location", job.getLocation()),
-            Map.entry("salaryRange", job.getSalaryRange()),
-            Map.entry("description", job.getDescription()),
-            Map.entry("postedAt", job.getPostedAt() != null ? job.getPostedAt().toString().replace("T", "T").concat("Z") : null),
-            Map.entry("requirements", job.getRequirements()),
-            Map.entry("responsibilities", job.getResponsibilities()),
-            Map.entry("applicationsCount", jobService.getApplicationsCountForJob(job.getId())),
-            Map.entry("active", job.isActive())
-        )).toList();
-        return ResponseEntity.ok(response);
+        try {
+            List<Job> jobs = jobService.getJobsByCompany(userDetails.getUser().getId());
+            List<Map<String, Object>> jobsList = jobs.stream().map(job -> Map.ofEntries(
+                Map.entry("id", String.valueOf(job.getId())),
+                Map.entry("title", job.getTitle()),
+                Map.entry("company", Map.of(
+                    "name", job.getCompany().getName(),
+                    "bio", job.getCompany().getBio() != null ? job.getCompany().getBio() : "No Description"
+                )),
+                Map.entry("location", job.getLocation()),
+                Map.entry("salaryRange", job.getSalaryRange()),
+                Map.entry("description", job.getDescription()),
+                Map.entry("postedAt", job.getPostedAt() != null ? job.getPostedAt().toString().replace("T", "T").concat("Z") : null),
+                Map.entry("requirements", job.getRequirements()),
+                Map.entry("responsibilities", job.getResponsibilities()),
+                Map.entry("applicationsCount", jobService.getApplicationsCountForJob(job.getId())),
+                Map.entry("active", job.isActive())
+            )).toList();
+            
+            Map<String, Object> response = new HashMap<>();
+            response.put("status", "success");
+            response.put("message", "Company jobs retrieved successfully");
+            response.put("data", jobsList);
+            response.put("count", jobsList.size());
+            response.put("companyId", userDetails.getUser().getId());
+            response.put("timestamp", java.time.Instant.now().toString());
+            
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            Map<String, Object> response = new HashMap<>();
+            response.put("status", "error");
+            response.put("message", "Failed to retrieve company jobs: " + e.getMessage());
+            response.put("companyId", userDetails.getUser().getId());
+            response.put("timestamp", java.time.Instant.now().toString());
+            
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
     }
 
     // Update job active status (COMPANY only, must be owner)
     @PutMapping("/{id}/status")
     @PreAuthorize("hasRole('COMPANY')")
-    public ResponseEntity<?> updateJobStatus(
+    public ResponseEntity<Map<String, Object>> updateJobStatus(
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @PathVariable Long id,
             @RequestParam boolean active) {
         logger.debug("Updating job status. JobId: {}, active: {}", id, active);
         try {
             Job updatedJob = jobService.updateJobActiveStatus(userDetails.getUser().getId(), id, active);
-            return ResponseEntity.ok(updatedJob);
+            
+            Map<String, Object> response = new HashMap<>();
+            response.put("status", "success");
+            response.put("message", "Job status updated successfully");
+            response.put("data", updatedJob);
+            response.put("jobId", id);
+            response.put("newStatus", active ? "active" : "inactive");
+            response.put("action", "status_update");
+            response.put("timestamp", java.time.Instant.now().toString());
+            
+            return ResponseEntity.ok(response);
         } catch (RuntimeException e) {
             logger.error("Error updating job status: {}", e.getMessage());
-            return ResponseEntity.badRequest().body(e.getMessage());
+            
+            Map<String, Object> response = new HashMap<>();
+            response.put("status", "error");
+            response.put("message", "Failed to update job status: " + e.getMessage());
+            response.put("jobId", id);
+            response.put("requestedStatus", active ? "active" : "inactive");
+            response.put("timestamp", java.time.Instant.now().toString());
+            
+            return ResponseEntity.badRequest().body(response);
         }
     }
 
     // Get applications for a job (COMPANY only, must be owner)
     @GetMapping("/{jobId}/applications")
     @PreAuthorize("hasRole('COMPANY')")
-    public ResponseEntity<?> getJobApplications(
+    public ResponseEntity<Map<String, Object>> getJobApplications(
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @PathVariable Long jobId) {
         try {
             List<Application> applications = jobService.getJobApplications(userDetails.getUser().getId(), jobId);
-            return ResponseEntity.ok(applications);
+            
+            Map<String, Object> response = new HashMap<>();
+            response.put("status", "success");
+            response.put("message", "Job applications retrieved successfully");
+            response.put("data", applications);
+            response.put("count", applications.size());
+            response.put("jobId", jobId);
+            response.put("companyId", userDetails.getUser().getId());
+            response.put("timestamp", java.time.Instant.now().toString());
+            
+            return ResponseEntity.ok(response);
         } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            Map<String, Object> response = new HashMap<>();
+            response.put("status", "error");
+            response.put("message", "Failed to retrieve job applications: " + e.getMessage());
+            response.put("jobId", jobId);
+            response.put("companyId", userDetails.getUser().getId());
+            response.put("timestamp", java.time.Instant.now().toString());
+            
+            return ResponseEntity.badRequest().body(response);
         }
     }
 
@@ -227,6 +434,28 @@ public class JobController {
             @PathVariable Long applicationId,
             @Valid @RequestBody ApplicationStatusDTO statusDTO) {
         try {
+            // Validate input parameters
+            if (applicationId == null || applicationId <= 0) {
+                Map<String, Object> errorResponse = new HashMap<>();
+                errorResponse.put("status", "error");
+                errorResponse.put("message", "Invalid application ID. Application ID must be a positive number");
+                return ResponseEntity.badRequest().body(errorResponse);
+            }
+            
+            if (statusDTO == null) {
+                Map<String, Object> errorResponse = new HashMap<>();
+                errorResponse.put("status", "error");
+                errorResponse.put("message", "Request body is required. Please provide application status data");
+                return ResponseEntity.badRequest().body(errorResponse);
+            }
+            
+            if (statusDTO.getStatus() == null) {
+                Map<String, Object> errorResponse = new HashMap<>();
+                errorResponse.put("status", "error");
+                errorResponse.put("message", "Application status is required. Valid values are: PENDING, ACCEPTED, REJECTED, REVIEWING");
+                return ResponseEntity.badRequest().body(errorResponse);
+            }
+            
             logger.info("Received status update request for application {}: {}", applicationId, statusDTO.getStatus());
             logger.info("Company ID from token: {}", userDetails.getUser().getId());
             
@@ -234,10 +463,29 @@ public class JobController {
                 userDetails.getUser().getId(), applicationId, statusDTO.getStatus());
             
             logger.info("Successfully updated application status");
-            return ResponseEntity.ok(application);
+            
+            Map<String, Object> response = new HashMap<>();
+            response.put("status", "success");
+            response.put("message", "Application status updated successfully");
+            response.put("data", application);
+            response.put("applicationId", applicationId);
+            response.put("newStatus", statusDTO.getStatus());
+            response.put("action", "status_update");
+            response.put("timestamp", java.time.Instant.now().toString());
+            
+            return ResponseEntity.ok(response);
         } catch (RuntimeException e) {
             logger.error("Error updating application status: {}", e.getMessage());
-            return ResponseEntity.badRequest().body(e.getMessage());
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("status", "error");
+            errorResponse.put("message", "Failed to update application status: " + e.getMessage());
+            return ResponseEntity.badRequest().body(errorResponse);
+        } catch (Exception e) {
+            logger.error("Unexpected error: {}", e.getMessage());
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("status", "error");
+            errorResponse.put("message", "Invalid request format or data type mismatch");
+            return ResponseEntity.badRequest().body(errorResponse);
         }
     }
 }

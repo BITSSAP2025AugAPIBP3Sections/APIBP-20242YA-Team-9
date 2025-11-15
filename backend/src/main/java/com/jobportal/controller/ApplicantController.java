@@ -24,7 +24,7 @@ import java.net.MalformedURLException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.ZoneOffset;
-import java.util.Collections;
+
 import java.util.List;
 import java.util.Map;
 
@@ -43,28 +43,9 @@ public class ApplicantController {
     @GetMapping("/profile")
     public ResponseEntity<Map<String, Object>> getProfile(
             @AuthenticationPrincipal CustomUserDetails userDetails) {
-        User user = userDetails.getUser();
-        Map<String, Object> response = Map.ofEntries(
-                Map.entry("id", String.valueOf(user.getId())),
-                Map.entry("name", user.getName()),
-                Map.entry("email", user.getEmail()),
-                Map.entry("role", user.getRole().toString()),
-                Map.entry("createdAt", user.getCreatedAt() != null ? user.getCreatedAt().toString() : null),
-                Map.entry("active", user.isActive()),
-                Map.entry("bio", user.getBio() != null ? user.getBio() : "No Description")
-        );
-        return ResponseEntity.ok(response);
-    }
-
-
-    // Update applicant profile
-    @PutMapping("/profile")
-    public ResponseEntity<?> updateProfile(
-            @AuthenticationPrincipal CustomUserDetails userDetails,
-            @RequestBody User updatedUser) {
         try {
-            User user = applicantService.updateProfile(userDetails.getUser().getId(), updatedUser);
-            Map<String, Object> response = Map.ofEntries(
+            User user = userDetails.getUser();
+            Map<String, Object> userData = Map.ofEntries(
                     Map.entry("id", String.valueOf(user.getId())),
                     Map.entry("name", user.getName()),
                     Map.entry("email", user.getEmail()),
@@ -73,22 +54,92 @@ public class ApplicantController {
                     Map.entry("active", user.isActive()),
                     Map.entry("bio", user.getBio() != null ? user.getBio() : "No Description")
             );
+            
+            Map<String, Object> response = Map.of(
+                "status", "success",
+                "message", "Profile retrieved successfully",
+                "data", userData,
+                "userId", user.getId(),
+                "timestamp", java.time.Instant.now().toString()
+            );
+            
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            Map<String, Object> response = Map.of(
+                "status", "error",
+                "message", "Failed to retrieve profile: " + e.getMessage(),
+                "timestamp", java.time.Instant.now().toString()
+            );
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
+    }
+
+
+    // Update applicant profile
+    @PutMapping("/profile")
+    public ResponseEntity<Map<String, Object>> updateProfile(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @RequestBody User updatedUser) {
+        try {
+            User user = applicantService.updateProfile(userDetails.getUser().getId(), updatedUser);
+            Map<String, Object> userData = Map.ofEntries(
+                    Map.entry("id", String.valueOf(user.getId())),
+                    Map.entry("name", user.getName()),
+                    Map.entry("email", user.getEmail()),
+                    Map.entry("role", user.getRole().toString()),
+                    Map.entry("createdAt", user.getCreatedAt() != null ? user.getCreatedAt().toString() : null),
+                    Map.entry("active", user.isActive()),
+                    Map.entry("bio", user.getBio() != null ? user.getBio() : "No Description")
+            );
+            
+            Map<String, Object> response = Map.of(
+                "status", "success",
+                "message", "Profile updated successfully",
+                "data", userData,
+                "userId", user.getId(),
+                "action", "update",
+                "timestamp", java.time.Instant.now().toString()
+            );
+            
             return ResponseEntity.ok(response);
         } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            Map<String, Object> response = Map.of(
+                "status", "error",
+                "message", "Failed to update profile: " + e.getMessage(),
+                "userId", userDetails.getUser().getId(),
+                "timestamp", java.time.Instant.now().toString()
+            );
+            return ResponseEntity.badRequest().body(response);
         }
     }
 
     // Upload resume
     @PostMapping("/resume")
-    public ResponseEntity<?> uploadResume(
+    public ResponseEntity<Map<String, Object>> uploadResume(
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @RequestParam("file") MultipartFile file) {
         try {
             String resumeUrl = applicantService.uploadResume(userDetails.getUser().getId(), file);
-            return ResponseEntity.ok(Collections.singletonMap("message", resumeUrl));
+            
+            Map<String, Object> response = Map.of(
+                "status", "success",
+                "message", "Resume uploaded successfully",
+                "data", Map.of("resumeUrl", resumeUrl, "filename", file.getOriginalFilename()),
+                "userId", userDetails.getUser().getId(),
+                "action", "upload",
+                "timestamp", java.time.Instant.now().toString()
+            );
+            
+            return ResponseEntity.ok(response);
         } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            Map<String, Object> response = Map.of(
+                "status", "error",
+                "message", "Failed to upload resume: " + e.getMessage(),
+                "userId", userDetails.getUser().getId(),
+                "filename", file.getOriginalFilename(),
+                "timestamp", java.time.Instant.now().toString()
+            );
+            return ResponseEntity.badRequest().body(response);
         }
     }
 
@@ -146,53 +197,118 @@ public class ApplicantController {
 
     // Get all available jobs
     @GetMapping("/jobs")
-    public ResponseEntity<List<Job>> getAllJobs(
+    public ResponseEntity<Map<String, Object>> getAllJobs(
             @RequestParam(required = false) String location,
             @RequestParam(required = false) String title,
             @RequestParam(required = false) String salaryRange) {
-        List<Job> jobs = applicantService.searchJobs(location, title, salaryRange);
-        return ResponseEntity.ok(jobs);
+        try {
+            List<Job> jobs = applicantService.searchJobs(location, title, salaryRange);
+            
+            Map<String, Object> response = Map.of(
+                "status", "success",
+                "message", "Jobs retrieved successfully",
+                "data", jobs,
+                "count", jobs.size(),
+                "filters", Map.of(
+                    "location", location != null ? location : "all",
+                    "title", title != null ? title : "all",
+                    "salaryRange", salaryRange != null ? salaryRange : "all"
+                ),
+                "timestamp", java.time.Instant.now().toString()
+            );
+            
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            Map<String, Object> response = Map.of(
+                "status", "error",
+                "message", "Failed to retrieve jobs: " + e.getMessage(),
+                "timestamp", java.time.Instant.now().toString()
+            );
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
     }
 
     // Apply for a job
     @PostMapping("/apply/{jobId}")
-    public ResponseEntity<?> applyToJob(
+    public ResponseEntity<Map<String, Object>> applyToJob(
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @PathVariable Long jobId,
             @RequestParam(required = false) String resumeUrl) {
         try {
             Application application = applicantService.applyToJob(
                 userDetails.getUser().getId(), jobId, resumeUrl);
-            return ResponseEntity.ok("Applied successfully to job with application ID: " + application.getId());
+                
+            Map<String, Object> response = Map.of(
+                "status", "success",
+                "message", "Applied successfully to job",
+                "data", Map.of(
+                    "applicationId", application.getId(),
+                    "jobId", jobId,
+                    "status", application.getStatus().toString(),
+                    "appliedAt", application.getAppliedAt().toString()
+                ),
+                "userId", userDetails.getUser().getId(),
+                "action", "apply",
+                "timestamp", java.time.Instant.now().toString()
+            );
+            
+            return ResponseEntity.ok(response);
         } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            Map<String, Object> response = Map.of(
+                "status", "error",
+                "message", "Failed to apply for job: " + e.getMessage(),
+                "jobId", jobId,
+                "userId", userDetails.getUser().getId(),
+                "timestamp", java.time.Instant.now().toString()
+            );
+            return ResponseEntity.badRequest().body(response);
         }
     }
 
     // Get my applications
     @GetMapping("/applications")
-    public ResponseEntity<List<Map<String, Object>>> getMyApplications(
+    public ResponseEntity<Map<String, Object>> getMyApplications(
             @AuthenticationPrincipal CustomUserDetails userDetails) {
-        List<Application> applications = applicantService.getApplicationsByApplicant(
-            userDetails.getUser().getId());
-        List<Map<String, Object>> response = applications.stream().map(app -> Map.of(
-            "id", String.valueOf(app.getId()),
-            "job", Map.of(
-                "id", String.valueOf(app.getJob().getId()),
-                "title", app.getJob().getTitle(),
-                "company", Map.of(
-                    "name", app.getJob().getCompany().getName()
-                )
-            ),
-            "status", app.getStatus().toString(),
-            "appliedAt", app.getAppliedAt().atZone(ZoneOffset.UTC).toInstant().toString()
-        )).toList();
-        return ResponseEntity.ok(response);
+        try {
+            List<Application> applications = applicantService.getApplicationsByApplicant(
+                userDetails.getUser().getId());
+            List<Map<String, Object>> applicationsList = applications.stream().map(app -> Map.of(
+                "id", String.valueOf(app.getId()),
+                "job", Map.of(
+                    "id", String.valueOf(app.getJob().getId()),
+                    "title", app.getJob().getTitle(),
+                    "company", Map.of(
+                        "name", app.getJob().getCompany().getName()
+                    )
+                ),
+                "status", app.getStatus().toString(),
+                "appliedAt", app.getAppliedAt().atZone(ZoneOffset.UTC).toInstant().toString()
+            )).toList();
+            
+            Map<String, Object> response = Map.of(
+                "status", "success",
+                "message", "Applications retrieved successfully",
+                "data", applicationsList,
+                "count", applicationsList.size(),
+                "userId", userDetails.getUser().getId(),
+                "timestamp", java.time.Instant.now().toString()
+            );
+            
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            Map<String, Object> response = Map.of(
+                "status", "error",
+                "message", "Failed to retrieve applications: " + e.getMessage(),
+                "userId", userDetails.getUser().getId(),
+                "timestamp", java.time.Instant.now().toString()
+            );
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
     }
 
     // Get application status
     @GetMapping("/applications/{applicationId}")
-    public ResponseEntity<?> getApplicationStatus(
+    public ResponseEntity<Map<String, Object>> getApplicationStatus(
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @PathVariable Long applicationId) {
         try {
@@ -202,36 +318,75 @@ public class ApplicantController {
             User company = job.getCompany();
             User applicant = application.getApplicant();
 
-            Map<String, Object> response = Map.of(
-                    "title", job.getTitle(),
-                    "description", job.getDescription(),
+            Map<String, Object> applicationData = Map.of(
+                    "applicationId", applicationId,
+                    "status", application.getStatus().toString(),
+                    "appliedAt", application.getAppliedAt().toString(),
+                    "job", Map.of(
+                        "id", job.getId(),
+                        "title", job.getTitle(),
+                        "description", job.getDescription(),
+                        "requirements", job.getRequirements(),
+                        "responsibilities", job.getResponsibilities()
+                    ),
                     "company", Map.of(
                             "name", company.getName(),
                             "email", company.getEmail()
                     ),
-                    "requirements", job.getRequirements(), // List<String>
-                    "responsibilities", job.getResponsibilities(), // List<String>
                     "applicant", Map.of(
                             "name", applicant.getName(),
                             "email", applicant.getEmail()
                     )
             );
+            
+            Map<String, Object> response = Map.of(
+                "status", "success",
+                "message", "Application details retrieved successfully",
+                "data", applicationData,
+                "userId", userDetails.getUser().getId(),
+                "timestamp", java.time.Instant.now().toString()
+            );
+            
             return ResponseEntity.ok(response);
         } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            Map<String, Object> response = Map.of(
+                "status", "error",
+                "message", "Failed to retrieve application details: " + e.getMessage(),
+                "applicationId", applicationId,
+                "userId", userDetails.getUser().getId(),
+                "timestamp", java.time.Instant.now().toString()
+            );
+            return ResponseEntity.badRequest().body(response);
         }
     }
 
     // Withdraw application
     @DeleteMapping("/applications/{applicationId}")
-    public ResponseEntity<?> withdrawApplication(
+    public ResponseEntity<Map<String, Object>> withdrawApplication(
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @PathVariable Long applicationId) {
         try {
             applicantService.withdrawApplication(userDetails.getUser().getId(), applicationId);
-            return ResponseEntity.ok().build();
+            
+            Map<String, Object> response = Map.of(
+                "status", "success",
+                "message", "Application withdrawn successfully",
+                "applicationId", applicationId,
+                "userId", userDetails.getUser().getId(),
+                "action", "withdraw",
+                "timestamp", java.time.Instant.now().toString()
+            );
+            
+            return ResponseEntity.ok(response);
         } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            Map<String, Object> response = Map.of(
+                "status", "error",
+                "message", "Failed to withdraw application: " + e.getMessage(),
+                "applicationId", applicationId,
+                "userId", userDetails.getUser().getId(),
+                "timestamp", java.time.Instant.now().toString()
+            );
+            return ResponseEntity.badRequest().body(response);
         }
     }
 }

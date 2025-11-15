@@ -1,0 +1,501 @@
+### Environment Variables ###
+# @name login_company
+POST http://localhost:8080/api/auth/login
+Content-Type: application/json
+
+{
+    "email": "tech@company.com",
+    "password": "password123"
+}
+
+###
+
+@company_token = {{login_company.response.body.token}}
+
+# @name login_applicant
+POST http://localhost:8080/api/auth/login
+Content-Type: application/json
+
+{
+    "email": "john@example.com",
+    "password": "password123"
+}
+
+###
+
+@applicant_token = {{login_applicant.response.body.token}}
+
+# @name login_admin
+POST http://localhost:8080/api/auth/login
+Content-Type: application/json
+
+{
+    "email": "admin@jobportal.com",
+    "password": "admin123"
+}
+
+###
+
+@admin_token = {{login_admin.response.body.token}}
+
+### Job Portal API Tests ###
+
+#####################################################
+### 1. User Registration
+#####################################################
+
+### Register TechCorp (Company)
+POST http://localhost:8080/api/auth/register
+Content-Type: application/json
+
+{
+    "name": "TechCorp Inc",
+    "email": "techcorp@example.com",
+    "password": "techcorp123",
+    "role": "COMPANY"
+}
+
+### Register John (Applicant)
+POST http://localhost:8080/api/auth/register
+Content-Type: application/json
+
+{
+    "name": "John Developer",
+    "email": "john@example.com",
+    "password": "john123",
+    "role": "APPLICANT"
+}
+
+### Register Admin
+POST http://localhost:8080/api/auth/register
+Content-Type: application/json
+
+{
+    "name": "Admin User",
+    "email": "admin@jobportal.com",
+    "password": "admin123",
+    "role": "ADMIN"
+}
+
+#####################################################
+### 2. User Authentication (Login)
+#####################################################
+
+### Login as TechCorp (Company)
+# @name loginCompany
+POST http://localhost:8080/api/auth/login
+Content-Type: application/json
+
+{
+    "email": "techcorp@example.com",
+    "password": "techcorp123"
+}
+
+> {% client.global.set("company_token", response.body.token); %}
+
+### Login as John (Applicant)
+# @name loginApplicant
+POST http://localhost:8080/api/auth/login
+Content-Type: application/json
+
+{
+    "email": "john@example.com",
+    "password": "john123"
+}
+
+> {% client.global.set("applicant_token", response.body.token); %}
+
+### Admin Login (Get Token)
+# @name adminLogin
+POST http://localhost:8080/api/auth/login
+Content-Type: application/json
+
+{
+    "email": "admin@jobportal.com",
+    "password": "admin123"
+}
+
+> {%
+    client.global.set("admin_token", response.body.token);
+%}
+
+#####################################################
+### 3. Company Operations
+#####################################################
+
+### Create Company Profile
+POST http://localhost:8080/api/profile
+Content-Type: application/json
+Authorization: Bearer {{company_token}}
+
+{
+    "companyName": "TechCorp Inc"
+}
+
+### Get Company Profile
+GET http://localhost:8080/api/profile/me
+Authorization: Bearer {{company_token}}
+
+### Create First Job Posting
+POST http://localhost:8080/api/jobs
+Content-Type: application/json
+Authorization: Bearer {{company_token}}
+
+{
+    "title": "Senior Software Engineer",
+    "description": "Looking for an experienced software engineer with 5+ years of experience",
+    "location": "San Francisco, CA",
+    "salaryRange": "$120,000 - $150,000"
+}
+
+### Create Second Job Posting
+POST http://localhost:8080/api/jobs
+Content-Type: application/json
+Authorization: Bearer {{company_token}}
+
+{
+    "title": "Frontend Developer",
+    "description": "Looking for a frontend developer with React experience",
+    "location": "Remote",
+    "salaryRange": "$90,000 - $120,000"
+}
+
+
+### Get all jobs posted by the company
+GET http://localhost:8080/api/jobs/company
+Authorization: Bearer {{company_token}}
+
+### Get applications for a specific job (replace {jobId} with actual job ID)
+GET http://localhost:8080/api/jobs/{jobId}/applications
+Authorization: Bearer {{company_token}}
+
+### View Company's Job Postings
+GET http://localhost:8080/api/jobs/company
+Authorization: Bearer {{company_token}}
+
+### Update Job Active Status
+PUT http://localhost:8080/api/jobs/1/status?active=false
+Authorization: Bearer {{company_token}}
+
+# Response will be the updated job object with active=false
+# To reactivate the job, use active=true in the query parameter
+
+### Update Job with Requirements and Responsibilities
+PUT http://localhost:8080/api/jobs/1
+Content-Type: application/json
+Authorization: Bearer {{company_token}}
+
+{
+  "title": "Senior Frontend Developer",
+  "description": "We are looking for an experienced frontend developer to join our team.",
+  "location": "San Francisco, CA (Remote)",
+  "salaryRange": "$120,000 - $150,000",
+  "requirements": [
+    "5+ years of experience in frontend development",
+    "Strong proficiency in React, TypeScript, and modern JavaScript",
+    "Experience with state management libraries (Redux, MobX, etc.)",
+    "Knowledge of responsive design and cross-browser compatibility",
+    "Familiarity with testing frameworks (Jest, React Testing Library)"
+  ],
+  "responsibilities": [
+    "Develop and maintain frontend applications using React and TypeScript",
+    "Collaborate with designers and backend developers to implement features",
+    "Write clean, maintainable, and efficient code",
+    "Participate in code reviews and provide constructive feedback",
+    "Stay up-to-date with emerging trends and technologies"
+  ]
+}
+
+#####################################################
+### 4. Applicant Operations
+#####################################################
+
+### Upload Resume
+POST http://localhost:8080/api/applicant/resume
+Content-Type: multipart/form-data; boundary=boundary
+Authorization: Bearer {{applicant_token}}
+
+--boundary
+Content-Disposition: form-data; name="file"; filename="resume.pdf"
+Content-Type: application/pdf
+
+< ./test-files/resume.pdf
+--boundary--
+
+### Search All Jobs
+GET http://localhost:8080/api/applicant/jobs
+Authorization: Bearer {{applicant_token}}
+
+### Apply for a Job
+POST http://localhost:8080/api/applicant/apply/1
+Content-Type: application/json
+Authorization: Bearer {{applicant_token}}
+
+{
+    "resumeUrl": "/api/applicant/resume/1/resume.pdf"
+}
+
+### View My Applications
+GET http://localhost:8080/api/applicant/applications
+Authorization: Bearer {{applicant_token}}
+
+#####################################################
+### 5. Company Reviews Applications
+#####################################################
+
+### View Applications for Job
+GET http://localhost:8080/api/jobs/1/applications
+Authorization: Bearer {{company_token}}
+
+### View All Applications with Status for a Job
+GET http://localhost:8080/api/jobs/1/applications
+Authorization: Bearer {{company_token}}
+
+# Response will include:
+# [
+#   {
+#     "id": 1,
+#     "applicant": {
+#       "id": 2,
+#       "name": "John Developer",
+#       "email": "john@example.com"
+#     },
+#     "resumeUrl": "/api/applicant/resume/1/resume.pdf",
+#     "status": "REVIEWING",
+#     "appliedAt": "2024-03-20T10:30:00"
+#   },
+#   {
+#     "id": 2,
+#     "applicant": {
+#       "id": 3,
+#       "name": "Jane Developer",
+#       "email": "jane@example.com"
+#     },
+#     "resumeUrl": "/api/applicant/resume/2/resume.pdf",
+#     "status": "PENDING",
+#     "appliedAt": "2024-03-21T14:15:00"
+#   }
+# ]
+
+### Test Company-Only Access for Application Status Updates ###
+
+### Try to update application status as applicant (should fail)
+PUT http://localhost:8080/api/jobs/applications/1
+Content-Type: application/json
+Authorization: Bearer {{applicant_token}}
+
+{
+    "status": "REVIEWING"
+}
+
+### Update application status as company (should succeed)
+PUT http://localhost:8080/api/jobs/applications/1
+Content-Type: application/json
+Authorization: Bearer {{company_token}}
+
+{
+    "status": "REVIEWING"
+}
+
+#####################################################
+### 6. Admin Operations
+#####################################################
+
+### Admin API Requests
+@baseUrl = http://localhost:8080/api/admin
+@adminToken = your_admin_jwt_token_here
+
+### User Management
+
+# Get all users including applicants, companies, and admins
+GET {{baseUrl}}/users
+Authorization: Bearer {{adminToken}}
+
+# Get users by role (APPLICANT, COMPANY, ADMIN)
+GET {{baseUrl}}/users?role=APPLICANT
+Authorization: Bearer {{adminToken}}
+
+# Get specific user
+GET {{baseUrl}}/users/1
+Authorization: Bearer {{adminToken}}
+
+# Update user status (activate/deactivate)----user won't be able to apply for jobs but would be able to login
+PUT {{baseUrl}}/users/1/status?active=false
+Authorization: Bearer {{adminToken}}
+
+# Delete user
+DELETE {{baseUrl}}/users/1
+Authorization: Bearer {{adminToken}}
+
+### Job Management
+
+# Get all jobs
+GET {{baseUrl}}/jobs
+Authorization: Bearer {{adminToken}}
+
+# Get active jobs only
+GET {{baseUrl}}/jobs?active=true
+Authorization: Bearer {{adminToken}}
+
+# Update job status
+PUT {{baseUrl}}/jobs/1/status?active=false
+Authorization: Bearer {{adminToken}}
+
+# Delete job
+DELETE {{baseUrl}}/jobs/1
+Authorization: Bearer {{adminToken}}
+
+### Application Management
+
+# Get all applications
+GET {{baseUrl}}/applications
+Authorization: Bearer {{adminToken}}
+
+# Get applications by status
+GET {{baseUrl}}/applications?status=PENDING
+Authorization: Bearer {{adminToken}}
+
+# Update application status
+PUT {{baseUrl}}/applications/1/status?status=ACCEPTED
+Authorization: Bearer {{adminToken}}
+
+# Delete application
+DELETE {{baseUrl}}/applications/1
+Authorization: Bearer {{adminToken}}
+
+## User Management:
+#   List/filter users
+#   Get specific user
+#   Update user status
+#   Delete user
+## Job Management:
+#   List/filter jobs
+#   Update job status
+#   Delete job
+## Application Management:
+#   List/filter applications
+#   Update application status
+#   Delete application   
+
+
+
+
+
+#####################################################
+### Testing Notes:
+#####################################################
+# Test Sequence:
+# 1. Register all users
+# 2. Login and get tokens
+# 3. Company: Create profile and post jobs
+# 4. Applicant: Upload resume and apply for jobs
+# 5. Company: Review applications
+# 6. Admin: Monitor overall system
+#
+# Expected Results:
+# - All registrations should return 200/201
+# - Logins should return tokens
+# - Company operations require company token
+# - Applicant operations require applicant token
+# - Admin operations require admin token
+# - Invalid tokens should return 401
+# - Wrong role access should return 403
+#
+# 7. Resume Upload:
+#    - Create a test-files directory
+#    - Add a sample resume.pdf for testing
+#    - Maximum file size is configured in application.properties
+#    - Supported formats: PDF, DOC, DOCX
+#
+# 8. Email Notifications:
+#    - Emails are sent for:
+#      * Application submission
+#      * Application status changes
+#      * Account registration
+#    - Check spam folder during testing
+
+### View All Jobs (Public - No Auth Required)
+GET http://localhost:8080/api/jobs
+
+### View All Jobs with Filters (Public - No Auth Required)
+GET http://localhost:8080/api/jobs?location=San Francisco&title=Software Engineer&salaryRange=120000-150000
+
+### View Applications for a Specific Job (Company Only)
+GET http://localhost:8080/api/jobs/1/applications
+Authorization: Bearer {{company_token}}
+
+# Response will include:
+# [
+#   {
+#     "id": 1,
+#     "applicant": {
+#       "id": 2,
+#       "name": "John Developer",
+#       "email": "john@example.com"
+#     },
+#     "resumeUrl": "/api/applicant/resume/1/resume.pdf",
+#     "status": "REVIEWING",
+#     "appliedAt": "2024-03-20T10:30:00"
+#   }
+# ]
+
+### View Applications for Another Job (Company Only)
+GET http://localhost:8080/api/jobs/2/applications
+Authorization: Bearer {{company_token}}
+
+### Job Search API Tests
+
+# Get all jobs (no filters)
+GET http://localhost:8080/api/jobs
+
+### Search jobs by title
+GET http://localhost:8080/api/jobs?title=developer
+
+### Search jobs by location
+GET http://localhost:8080/api/jobs?location=San Francisco
+
+### Search jobs by salary range - Lower Range
+GET http://localhost:8080/api/jobs?salaryRange=$0 - $25K
+
+### Search jobs by salary range - Middle Range
+GET http://localhost:8080/api/jobs?salaryRange=$50K - $75K
+
+### Search jobs by salary range - Upper Range
+GET http://localhost:8080/api/jobs?salaryRange=$100K - $150K
+
+### Search jobs by salary range - Top Range
+GET http://localhost:8080/api/jobs?salaryRange=$150K+
+
+### Combined search
+GET http://localhost:8080/api/jobs?title=developer&location=remote&salaryRange=$75K - $100K 
+
+
+
+#####################################################
+### 7. Profile Operations
+#####################################################
+
+### Get current user's profile
+GET http://localhost:8080/api/profiles/me
+Authorization: Bearer {{applicant_token}}
+
+### Get any user's profile
+GET http://localhost:8080/api/profiles/{userId}
+
+### Update current user's profile
+PUT http://localhost:8080/api/profiles/me
+Authorization: Bearer {{applicant_token}}
+
+{
+    "name": "John Doe",
+    "bio": "Experienced software developer with 5 years of experience in Java and Spring Boot"
+}
+
+### Update any user's profile by Admin
+PUT http://localhost:8080/api/profiles/{userId}
+Authorization: Bearer {{admin_token}}
+
+{
+    "name": "John Doe",
+    "bio": "Experienced software developer with 5 years of experience in Java and Spring Boot"
+}

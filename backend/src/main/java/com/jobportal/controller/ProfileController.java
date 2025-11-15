@@ -25,15 +25,53 @@ public class ProfileController {
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Map<String, Object>> getMyProfile(
             @AuthenticationPrincipal CustomUserDetails userDetails) {
-        Map<String, Object> profile = profileService.getUserProfile(userDetails.getUser().getId());
-        return ResponseEntity.ok(profile);
+        try {
+            Map<String, Object> profile = profileService.getUserProfile(userDetails.getUser().getId());
+            
+            Map<String, Object> response = Map.of(
+                "status", "success",
+                "message", "Profile retrieved successfully",
+                "data", profile,
+                "userId", userDetails.getUser().getId(),
+                "timestamp", java.time.Instant.now().toString()
+            );
+            
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            Map<String, Object> response = Map.of(
+                "status", "error",
+                "message", "Failed to retrieve profile: " + e.getMessage(),
+                "userId", userDetails.getUser().getId(),
+                "timestamp", java.time.Instant.now().toString()
+            );
+            return ResponseEntity.status(500).body(response);
+        }
     }
 
     // Get any user's profile (public)
     @GetMapping("/{userId}")
     public ResponseEntity<Map<String, Object>> getUserProfile(@PathVariable Long userId) {
-        Map<String, Object> profile = profileService.getUserProfile(userId);
-        return ResponseEntity.ok(profile);
+        try {
+            Map<String, Object> profile = profileService.getUserProfile(userId);
+            
+            Map<String, Object> response = Map.of(
+                "status", "success",
+                "message", "Profile retrieved successfully",
+                "data", profile,
+                "userId", userId,
+                "timestamp", java.time.Instant.now().toString()
+            );
+            
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
+            Map<String, Object> response = Map.of(
+                "status", "error",
+                "message", "Failed to retrieve profile: " + e.getMessage(),
+                "userId", userId,
+                "timestamp", java.time.Instant.now().toString()
+            );
+            return ResponseEntity.badRequest().body(response);
+        }
     }
 
     // Update current user's profile
@@ -42,9 +80,29 @@ public class ProfileController {
     public ResponseEntity<Map<String, Object>> updateMyProfile(
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @Valid @RequestBody ProfileUpdateDTO updateDTO) {
-        Map<String, Object> updatedProfile = profileService.updateUserProfile(
-                userDetails.getUser().getId(), updateDTO);
-        return ResponseEntity.ok(updatedProfile);
+        try {
+            Map<String, Object> updatedProfile = profileService.updateUserProfile(
+                    userDetails.getUser().getId(), updateDTO);
+            
+            Map<String, Object> response = Map.of(
+                "status", "success",
+                "message", "Profile updated successfully",
+                "data", updatedProfile,
+                "userId", userDetails.getUser().getId(),
+                "action", "update",
+                "timestamp", java.time.Instant.now().toString()
+            );
+            
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
+            Map<String, Object> response = Map.of(
+                "status", "error",
+                "message", "Failed to update profile: " + e.getMessage(),
+                "userId", userDetails.getUser().getId(),
+                "timestamp", java.time.Instant.now().toString()
+            );
+            return ResponseEntity.badRequest().body(response);
+        }
     }
 
     // Admin can update any user's profile
@@ -53,7 +111,27 @@ public class ProfileController {
     public ResponseEntity<Map<String, Object>> updateUserProfile(
             @PathVariable Long userId,
             @Valid @RequestBody ProfileUpdateDTO updateDTO) {
-        Map<String, Object> updatedProfile = profileService.updateUserProfile(userId, updateDTO);
-        return ResponseEntity.ok(updatedProfile);
+        try {
+            Map<String, Object> updatedProfile = profileService.updateUserProfile(userId, updateDTO);
+            
+            Map<String, Object> response = Map.of(
+                "status", "success",
+                "message", "Profile updated successfully by admin",
+                "data", updatedProfile,
+                "userId", userId,
+                "action", "admin_update",
+                "timestamp", java.time.Instant.now().toString()
+            );
+            
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
+            Map<String, Object> response = Map.of(
+                "status", "error",
+                "message", "Failed to update profile: " + e.getMessage(),
+                "userId", userId,
+                "timestamp", java.time.Instant.now().toString()
+            );
+            return ResponseEntity.badRequest().body(response);
+        }
     }
 } 
