@@ -1,0 +1,33 @@
+meta {
+  name: Bulk Update User Status
+  type: http
+  seq: 9
+}
+
+post {
+  url: http://localhost:8080/graphql
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{jwt_token}}
+}
+
+body:json {
+  {
+    "query": "mutation BulkUpdateUserStatus($userStatusMap: [UserStatusMapInput!]!) { bulkUpdateUserStatus(userStatusMap: $userStatusMap) { id name email role createdAt active bio } }",
+    "variables": {
+      "userStatusMap": [
+        {
+          "userId": "2",
+          "active": false
+        },
+        {
+          "userId": "3",
+          "active": true
+        }
+      ]
+    }
+  }
+}

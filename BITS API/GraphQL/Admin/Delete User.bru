@@ -1,0 +1,24 @@
+meta {
+  name: Delete User
+  type: http
+  seq: 5
+}
+
+post {
+  url: http://localhost:8080/graphql
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{jwt_token}}
+}
+
+body:json {
+  {
+    "query": "mutation DeleteUser($id: ID!) { deleteUser(id: $id) { message } }",
+    "variables": {
+      "id": "2"
+    }
+  }
+}
