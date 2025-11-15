@@ -27,12 +27,23 @@ public class AdminController {
 
     // User Management Endpoints
     @GetMapping("/users")
-    public ResponseEntity<List<User>> getAllUsers(
+    public ResponseEntity<List<Map<String, Object>>> getAllUsers(
             @RequestParam(required = false) String role,
             @RequestParam(defaultValue = "false") boolean includeInactive) {
         logger.debug("Getting all users with role: {} and includeInactive: {}", role, includeInactive);
         List<User> users = adminService.getAllUsers(role, includeInactive);
-        return ResponseEntity.ok(users);
+        List<Map<String, Object>> response = users.stream().map(user -> {
+            Map<String, Object> map = new java.util.HashMap<>();
+            map.put("id", user.getId());
+            map.put("name", user.getName());
+            map.put("email", user.getEmail());
+            map.put("role", user.getRole().toString());
+            map.put("createdAt", user.getCreatedAt() != null ? user.getCreatedAt().toString() : null);
+            map.put("active", user.isActive());
+            map.put("bio", user.getBio());
+            return map;
+        }).toList();
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/users/{id}")
@@ -71,27 +82,24 @@ public class AdminController {
 
     // Job Management Endpoints
     @GetMapping("/jobs")
-    public ResponseEntity<List<Job>> getAllJobs(
+    public ResponseEntity<List<Map<String, Object>>> getAllJobs(
             @RequestParam(required = false) Boolean active,
             @RequestParam(defaultValue = "false") boolean includeExpired) {
         logger.debug("Getting all jobs with active: {} and includeExpired: {}", active, includeExpired);
         List<Job> jobs = adminService.getAllJobs(active, includeExpired);
-        return ResponseEntity.ok(jobs);
+        List<Map<String, Object>> response = jobs.stream().map(job -> {
+            Map<String, Object> map = new java.util.HashMap<>();
+            map.put("id", job.getId());
+            map.put("title", job.getTitle());
+            map.put("description", job.getDescription());
+            map.put("company", job.getCompany() != null ? job.getCompany().getName() : null);
+            map.put("location", job.getLocation());
+            map.put("active", job.isActive());
+            return map;
+        }).toList();
+        return ResponseEntity.ok(response);
     }
 
-    @PutMapping("/jobs/{id}/status")
-    public ResponseEntity<?> updateJobStatus(
-            @PathVariable Long id,
-            @RequestParam boolean active) {
-        logger.debug("Updating job status. JobId: {}, active: {}", id, active);
-        try {
-            Job job = adminService.updateJobStatus(id, active);
-            return ResponseEntity.ok(job);
-        } catch (RuntimeException e) {
-            logger.error("Error updating job status: {}", e.getMessage());
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
-    }
 
     @DeleteMapping("/jobs/{id}")
     public ResponseEntity<?> deleteJob(@PathVariable Long id) {

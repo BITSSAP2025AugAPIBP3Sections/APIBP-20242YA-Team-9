@@ -1,0 +1,21 @@
+meta {
+  name: Get Current User Profile
+  type: http
+  seq: 1
+}
+
+post {
+  url: http://localhost:8080/graphql
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{jwt_token}}
+}
+
+body:json {
+  {
+    "query": "query GetCurrentUser { me { success message id name email role createdAt active bio } }"
+  }
+}
