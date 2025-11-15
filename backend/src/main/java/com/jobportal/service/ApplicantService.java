@@ -162,10 +162,6 @@ public class ApplicantService {
             throw new RuntimeException("Not authorized to withdraw this application");
         }
 
-        if (!"PENDING".equals(application.getStatus())) {
-            throw new RuntimeException("Cannot withdraw application in " + application.getStatus() + " status");
-        }
-
         applicationRepository.delete(application);
     }
 }

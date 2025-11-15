@@ -1,0 +1,27 @@
+meta {
+  name: Update Application Status
+  type: http
+  seq: 7
+}
+
+post {
+  url: http://localhost:8080/graphql
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{jwt_token}}
+}
+
+body:json {
+  {
+    "query": "mutation UpdateApplicationStatus($applicationId: ID!, $input: ApplicationStatusInput!) { updateApplicationStatus(applicationId: $applicationId, input: $input) { id job { id title } applicant { id name email } status appliedAt resumeUrl } }",
+    "variables": {
+      "applicationId": "1",
+      "input": {
+        "status": "UNDER_REVIEW"
+      }
+    }
+  }
+}

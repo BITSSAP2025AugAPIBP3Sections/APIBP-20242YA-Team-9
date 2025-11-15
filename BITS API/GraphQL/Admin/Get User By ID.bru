@@ -1,0 +1,24 @@
+meta {
+  name: Get User By ID
+  type: http
+  seq: 2
+}
+
+post {
+  url: http://localhost:8080/graphql
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{jwt_token}}
+}
+
+body:json {
+  {
+    "query": "query GetUserById($id: ID!) { getUserById(id: $id) { id name email role createdAt active bio } }",
+    "variables": {
+      "id": "1"
+    }
+  }
+}

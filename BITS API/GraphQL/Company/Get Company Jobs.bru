@@ -1,0 +1,21 @@
+meta {
+  name: Get Company Jobs
+  type: http
+  seq: 2
+}
+
+post {
+  url: http://localhost:8080/graphql
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{jwt_token}}
+}
+
+body:json {
+  {
+    "query": "query GetCompanyJobs { getCompanyJobs { id title description company { id name bio } location salaryRange postedAt requirements responsibilities applicationsCount active } }"
+  }
+}

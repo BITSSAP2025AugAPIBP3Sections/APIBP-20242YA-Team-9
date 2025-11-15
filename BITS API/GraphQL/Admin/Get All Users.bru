@@ -1,0 +1,25 @@
+meta {
+  name: Get All Users
+  type: http
+  seq: 1
+}
+
+post {
+  url: http://localhost:8080/graphql
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{jwt_token}}
+}
+
+body:json {
+  {
+    "query": "query GetAllUsers($role: String, $includeInactive: Boolean) { getAllUsers(role: $role, includeInactive: $includeInactive) { id name email role createdAt active bio } }",
+    "variables": {
+      "role": null,
+      "includeInactive": false
+    }
+  }
+}
