@@ -41,10 +41,21 @@ public class ApplicantController {
 
     // Get applicant profile
     @GetMapping("/profile")
-    public ResponseEntity<User> getProfile(
+    public ResponseEntity<Map<String, Object>> getProfile(
             @AuthenticationPrincipal CustomUserDetails userDetails) {
-        return ResponseEntity.ok(userDetails.getUser());
+        User user = userDetails.getUser();
+        Map<String, Object> response = Map.ofEntries(
+                Map.entry("id", String.valueOf(user.getId())),
+                Map.entry("name", user.getName()),
+                Map.entry("email", user.getEmail()),
+                Map.entry("role", user.getRole().toString()),
+                Map.entry("createdAt", user.getCreatedAt() != null ? user.getCreatedAt().toString() : null),
+                Map.entry("active", user.isActive()),
+                Map.entry("bio", user.getBio() != null ? user.getBio() : "No Description")
+        );
+        return ResponseEntity.ok(response);
     }
+
 
     // Update applicant profile
     @PutMapping("/profile")
@@ -53,7 +64,16 @@ public class ApplicantController {
             @RequestBody User updatedUser) {
         try {
             User user = applicantService.updateProfile(userDetails.getUser().getId(), updatedUser);
-            return ResponseEntity.ok(user);
+            Map<String, Object> response = Map.ofEntries(
+                    Map.entry("id", String.valueOf(user.getId())),
+                    Map.entry("name", user.getName()),
+                    Map.entry("email", user.getEmail()),
+                    Map.entry("role", user.getRole().toString()),
+                    Map.entry("createdAt", user.getCreatedAt() != null ? user.getCreatedAt().toString() : null),
+                    Map.entry("active", user.isActive()),
+                    Map.entry("bio", user.getBio() != null ? user.getBio() : "No Description")
+            );
+            return ResponseEntity.ok(response);
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
@@ -143,7 +163,7 @@ public class ApplicantController {
         try {
             Application application = applicantService.applyToJob(
                 userDetails.getUser().getId(), jobId, resumeUrl);
-            return ResponseEntity.ok(application);
+            return ResponseEntity.ok("Applied successfully to job with application ID: " + application.getId());
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
@@ -177,8 +197,26 @@ public class ApplicantController {
             @PathVariable Long applicationId) {
         try {
             Application application = applicantService.getApplicationStatus(
-                userDetails.getUser().getId(), applicationId);
-            return ResponseEntity.ok(application);
+                    userDetails.getUser().getId(), applicationId);
+            Job job = application.getJob();
+            User company = job.getCompany();
+            User applicant = application.getApplicant();
+
+            Map<String, Object> response = Map.of(
+                    "title", job.getTitle(),
+                    "description", job.getDescription(),
+                    "company", Map.of(
+                            "name", company.getName(),
+                            "email", company.getEmail()
+                    ),
+                    "requirements", job.getRequirements(), // List<String>
+                    "responsibilities", job.getResponsibilities(), // List<String>
+                    "applicant", Map.of(
+                            "name", applicant.getName(),
+                            "email", applicant.getEmail()
+                    )
+            );
+            return ResponseEntity.ok(response);
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }

@@ -1,0 +1,15 @@
+meta {
+  name: Get Resume
+  type: http
+  seq: 4
+}
+
+get {
+  url: http://localhost:8080/api/applicant/resume/1/resume.pdf 
+  body: none
+  auth: inherit
+}
+
+settings {
+  encodeUrl: true
+}
