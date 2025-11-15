@@ -1,0 +1,30 @@
+meta {
+  name: Create Job
+  type: http
+  seq: 4
+}
+
+post {
+  url: http://localhost:8080/api/jobs
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJjb21wYW55QGV4YW1wbGUuY29tIiwiaWQiOjMsInJvbGUiOiJST0xFX0NPTVBBTlkiLCJpYXQiOjE3NjI1ODM5NzgsImV4cCI6MTc2MjY3MDM3OH0.N0kb931xx1dWGsVIuxnpFJZfrklSLXAQAiMFSgF2RtjJpbIsrUGJ0Gb9G7QIWbFP9teKDBOpldofCm4-ypBXlg
+}
+
+body:json {
+  {
+      "title": "Software Engineer",
+      "location": "Remote",
+      "salaryRange": "100000-120000",
+      "description": "Job description 5",
+  "requirements": ["Java", "Spring Boot", "REST APIs"],
+  "responsibilities": ["Develop backend", "Write tests"]
+    }
+}
+
+settings {
+  encodeUrl: true
+}

@@ -1,0 +1,19 @@
+meta {
+  name: Get all jobs
+  type: http
+  seq: 5
+}
+
+get {
+  url: http://localhost:8080/api/jobs
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJjb21wYW55QGV4YW1wbGUuY29tIiwiaWQiOjEsInJvbGUiOiJST0xFX0NPTVBBTlkiLCJpYXQiOjE3NjMxODAzNTMsImV4cCI6MTc2MzI2Njc1M30.Z56U_3j4m7V-lBP2vrPY2iLoYvK1D6WbNGe8ylvIeKWGHs_nBLaMDXt1YX4B_VEAu-Lb_RdJUbkt6RFIGuZcHg
+}
+
+settings {
+  encodeUrl: true
+}
