@@ -42,6 +42,9 @@ public class SecurityConfig {
     @Autowired
     private CustomUserDetailsService customUserDetailsService;
 
+    @Autowired
+    private CustomAccessDeniedHandler customAccessDeniedHandler;
+
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
@@ -80,6 +83,9 @@ public class SecurityConfig {
                             .anyRequest().authenticated();
                     logger.debug("Security paths configured");
                 })
+                .exceptionHandling(exceptions -> exceptions
+                        .accessDeniedHandler(customAccessDeniedHandler)
+                )
                 .authenticationProvider(authenticationProvider())
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 

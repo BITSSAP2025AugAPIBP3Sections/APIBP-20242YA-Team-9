@@ -14,7 +14,6 @@ import com.jobportal.repository.UserRepository;
 import com.jobportal.security.jwt.JwtUtils;
 import com.jobportal.service.EmailService;
 
-import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
 
@@ -28,42 +27,100 @@ public class AuthController {
     @Autowired private EmailService emailService;
 
     @PostMapping("/register")
-    public ResponseEntity<?> register(@Validated @RequestBody RegisterRequest req) {
-        if (userRepo.findByEmail(req.getEmail()).isPresent()) {
-            return ResponseEntity.badRequest().body(Collections.singletonMap("message", "Email already exists"));
-        }
-        User user = new User(
-                req.getName(),
-                req.getEmail(),
-                passwordEncoder.encode(req.getPassword()),
-                req.getRole()
-        );
-        userRepo.save(user);
+    public ResponseEntity<Map<String, Object>> register(@Validated @RequestBody RegisterRequest req) {
+        try {
+            if (userRepo.findByEmail(req.getEmail()).isPresent()) {
+                Map<String, Object> response = Map.of(
+                    "status", "error",
+                    "message", "Registration failed: Email already exists",
+                    "email", req.getEmail(),
+                    "timestamp", java.time.Instant.now().toString()
+                );
+                return ResponseEntity.badRequest().body(response);
+            }
+            
+            User user = new User(
+                    req.getName(),
+                    req.getEmail(),
+                    passwordEncoder.encode(req.getPassword()),
+                    req.getRole()
+            );
+            User savedUser = userRepo.save(user);
 //        emailService.sendRegistrationEmail(user.getEmail(), user.getName());
-        return ResponseEntity.ok(Collections.singletonMap("message", "User registered successfully"));
+            
+            Map<String, Object> response = Map.of(
+                "status", "success",
+                "message", "User registered successfully",
+                "data", Map.of(
+                    "userId", savedUser.getId(),
+                    "name", savedUser.getName(),
+                    "email", savedUser.getEmail(),
+                    "role", savedUser.getRole()
+                ),
+                "action", "registration",
+                "timestamp", java.time.Instant.now().toString()
+            );
+            
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            Map<String, Object> response = Map.of(
+                "status", "error",
+                "message", "Registration failed: " + e.getMessage(),
+                "timestamp", java.time.Instant.now().toString()
+            );
+            return ResponseEntity.status(500).body(response);
+        }
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@Validated @RequestBody LoginRequest req) {
-        Optional<User> userOpt = userRepo.findByEmail(req.getEmail());
-        if (userOpt.isEmpty() ||
-                !passwordEncoder.matches(req.getPassword(), userOpt.get().getPassword())) {
-            return ResponseEntity
-                    .status(401)
-                    .body(Collections.singletonMap("message", "Invalid email or password"));
+    public ResponseEntity<Map<String, Object>> login(@Validated @RequestBody LoginRequest req) {
+        try {
+            Optional<User> userOpt = userRepo.findByEmail(req.getEmail());
+            if (userOpt.isEmpty() ||
+                    !passwordEncoder.matches(req.getPassword(), userOpt.get().getPassword())) {
+                Map<String, Object> response = Map.of(
+                    "status", "error",
+                    "message", "Authentication failed: Invalid email or password",
+                    "email", req.getEmail(),
+                    "timestamp", java.time.Instant.now().toString()
+                );
+                return ResponseEntity.status(401).body(response);
+            }
+            
+            User user = userOpt.get();
+            String token = jwtUtils.generateToken(user.getEmail(), user.getId(), user.getRole());
+            
+            // Calculate expiration time
+            long currentTime = System.currentTimeMillis();
+            long expirationTime = currentTime + jwtUtils.getExpirationTimeInMs();
+            
+            Map<String, Object> response = Map.of(
+                "status", "success",
+                "message", "Login successful",
+                "data", Map.of(
+                    "token", token,
+                    "expiresAt", expirationTime,
+                    "expiresAtISO", new java.util.Date(expirationTime).toString(),
+                    "user", Map.of(
+                        "id", user.getId(),
+                        "name", user.getName(),
+                        "email", user.getEmail(),
+                        "role", user.getRole(),
+                        "bio", user.getBio() == null ? "" : user.getBio()
+                    )
+                ),
+                "action", "authentication",
+                "timestamp", java.time.Instant.now().toString()
+            );
+            
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            Map<String, Object> response = Map.of(
+                "status", "error",
+                "message", "Login failed: " + e.getMessage(),
+                "timestamp", java.time.Instant.now().toString()
+            );
+            return ResponseEntity.status(500).body(response);
         }
-        User user = userOpt.get();
-        String token = jwtUtils.generateToken(user.getEmail(), user.getId(), user.getRole());
-        return ResponseEntity.ok(Collections.unmodifiableMap(
-            Map.of(
-                "token", token,
-                "user", Map.of(
-                    "name", user.getName(),
-                    "role", user.getRole(),
-                            "id",user.getId(),
-                            "bio", user.getBio() == null ? "" : user.getBio()
-                )
-            )
-        ));
     }
 }
