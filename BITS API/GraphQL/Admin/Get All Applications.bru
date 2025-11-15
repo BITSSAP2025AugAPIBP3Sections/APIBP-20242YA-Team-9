@@ -1,0 +1,25 @@
+meta {
+  name: Get All Applications
+  type: http
+  seq: 4
+}
+
+post {
+  url: http://localhost:8080/graphql
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{jwt_token}}
+}
+
+body:json {
+  {
+    "query": "query GetAllApplications($status: String, $includeArchived: Boolean) { getAllApplications(status: $status, includeArchived: $includeArchived) { id job { id title company { id name } } applicant { id name email } status appliedAt resumeUrl } }",
+    "variables": {
+      "status": null,
+      "includeArchived": false
+    }
+  }
+}

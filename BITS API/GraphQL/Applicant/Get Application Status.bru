@@ -1,0 +1,24 @@
+meta {
+  name: Get Application Status
+  type: http
+  seq: 6
+}
+
+post {
+  url: http://localhost:8080/graphql
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{jwt_token}}
+}
+
+body:json {
+  {
+    "query": "query GetApplicationStatus($applicationId: ID!) { getApplicationStatus(applicationId: $applicationId) { title description company { id name email bio } requirements responsibilities applicant { id name email role createdAt active bio } status appliedAt } }",
+    "variables": {
+      "applicationId": "1"
+    }
+  }
+}

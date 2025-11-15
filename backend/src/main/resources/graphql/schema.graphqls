@@ -1,0 +1,209 @@
+# GraphQL Schema for Job Portal Application
+
+# Enums
+enum Role {
+    APPLICANT
+    COMPANY
+    ADMIN
+}
+
+enum ApplicationStatus {
+    PENDING
+    UNDER_REVIEW
+    INTERVIEW_SCHEDULED
+    REJECTED
+    ACCEPTED
+}
+
+# Input Types
+input RegisterInput {
+    name: String!
+    email: String!
+    password: String!
+    role: Role!
+}
+
+input LoginInput {
+    email: String!
+    password: String!
+}
+
+input JobInput {
+    title: String!
+    description: String!
+    location: String!
+    salaryRange: String!
+    requirements: [String!]!
+    responsibilities: [String!]!
+}
+
+input JobUpdateInput {
+    title: String
+    description: String
+    location: String
+    salaryRange: String
+    requirements: [String!]
+    responsibilities: [String!]
+}
+
+input ProfileUpdateInput {
+    name: String
+    bio: String
+}
+
+input ApplicationStatusInput {
+    status: ApplicationStatus!
+}
+
+input UserStatusInput {
+    active: Boolean!
+}
+
+# Types
+type User {
+    id: ID!
+    name: String!
+    email: String!
+    role: Role!
+    createdAt: String!
+    active: Boolean!
+    bio: String
+}
+
+type Company {
+    id: ID!
+    name: String!
+    email: String!
+    bio: String
+}
+
+type Job {
+    id: ID!
+    title: String!
+    description: String!
+    company: Company!
+    location: String!
+    salaryRange: String!
+    postedAt: String!
+    requirements: [String!]!
+    responsibilities: [String!]!
+    applicationsCount: Int!
+    active: Boolean!
+}
+
+type Application {
+    id: ID!
+    job: Job!
+    applicant: User!
+    status: ApplicationStatus!
+    appliedAt: String!
+    resumeUrl: String
+}
+
+type ApplicationDetails {
+    title: String!
+    description: String!
+    company: Company!
+    requirements: [String!]!
+    responsibilities: [String!]!
+    applicant: User!
+    status: ApplicationStatus
+    appliedAt: String
+}
+
+type RegisterResponse {
+    success: Boolean!
+    message: String!
+    user: User
+}
+
+type LoginResponse {
+    success: Boolean!
+    message: String!
+    token: String
+    user: User
+}
+
+type ProfileResponse {
+    success: Boolean!
+    message: String!
+    id: ID
+    name: String
+    email: String
+    role: String
+    createdAt: String
+    active: Boolean
+    bio: String
+}
+
+type UploadResponse {
+    message: String!
+}
+
+type MessageResponse {
+    message: String!
+}
+
+# Query Type
+type Query {
+    # Authentication & Profile
+    me: ProfileResponse
+    getUserProfile(userId: ID!): ProfileResponse
+
+    # Jobs
+    getAllJobs(location: String, title: String, salaryRange: String): [Job!]!
+    getJobById(id: ID!): Job
+    getCompanyJobs: [Job!]!
+    getJobApplications(jobId: ID!): [Application!]!
+
+    # Applications
+    getMyApplications: [Application!]!
+    getApplicationStatus(applicationId: ID!): ApplicationDetails
+
+    # Admin Queries
+    getAllUsers(role: String, includeInactive: Boolean): [User!]!
+    getUserById(id: ID!): User
+    getAdminJobs(active: Boolean, includeExpired: Boolean): [Job!]!
+    getAllApplications(status: String, includeArchived: Boolean): [Application!]!
+}
+
+# Mutation Type
+type Mutation {
+    # Authentication
+    register(input: RegisterInput!): RegisterResponse!
+    login(input: LoginInput!): LoginResponse!
+
+    # Profile Management
+    updateProfile(input: ProfileUpdateInput!): User!
+    # Note: File upload will be handled via REST API, not GraphQL
+
+    # Job Management
+    createJob(input: JobInput!): Job!
+    updateJob(id: ID!, input: JobUpdateInput!): Job!
+    deleteJob(id: ID!): MessageResponse!
+    updateJobStatus(id: ID!, active: Boolean!): Job!
+
+    # Application Management
+    applyToJob(jobId: ID!, resumeUrl: String): MessageResponse!
+    withdrawApplication(applicationId: ID!): MessageResponse!
+    updateApplicationStatus(applicationId: ID!, input: ApplicationStatusInput!): Application!
+
+    # Admin Mutations
+    deleteUser(id: ID!): MessageResponse!
+    updateUserStatus(id: ID!, input: UserStatusInput!): User!
+    deleteAdminJob(id: ID!): MessageResponse!
+    deleteApplication(id: ID!): MessageResponse!
+    bulkUpdateUserStatus(userStatusMap: [UserStatusUpdate!]!): [User!]!
+    bulkUpdateJobStatus(jobStatusMap: [JobStatusUpdate!]!): [Job!]!
+}
+
+# Additional Input Types for Bulk Operations
+input UserStatusUpdate {
+    userId: ID!
+    active: Boolean!
+}
+
+input JobStatusUpdate {
+    jobId: ID!
+    active: Boolean!
+}

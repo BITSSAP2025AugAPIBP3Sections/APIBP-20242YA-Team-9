@@ -1,0 +1,27 @@
+meta {
+  name: Update Profile
+  type: http
+  seq: 2
+}
+
+post {
+  url: http://localhost:8080/graphql
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{jwt_token}}
+}
+
+body:json {
+  {
+    "query": "mutation UpdateProfile($input: ProfileUpdateInput!) { updateProfile(input: $input) { id name email role createdAt active bio } }",
+    "variables": {
+      "input": {
+        "name": "John Updated Doe",
+        "bio": "Experienced GraphQL developer with 5+ years experience"
+      }
+    }
+  }
+}

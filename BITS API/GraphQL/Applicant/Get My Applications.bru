@@ -1,0 +1,21 @@
+meta {
+  name: Get My Applications
+  type: http
+  seq: 4
+}
+
+post {
+  url: http://localhost:8080/graphql
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{jwt_token}}
+}
+
+body:json {
+  {
+    "query": "query GetMyApplications { getMyApplications { id job { id title company { name } } status appliedAt } }"
+  }
+}

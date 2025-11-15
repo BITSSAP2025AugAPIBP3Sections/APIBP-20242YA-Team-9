@@ -1,0 +1,22 @@
+meta {
+  name: Get All Jobs
+  type: http
+  seq: 3
+}
+
+post {
+  url: http://localhost:8080/graphql
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "query": "query GetAllJobs($location: String, $title: String, $salaryRange: String) { getAllJobs(location: $location, title: $title, salaryRange: $salaryRange) { id title description company { id name email bio } location salaryRange postedAt requirements responsibilities applicationsCount active } }",
+    "variables": {
+      "location": null,
+      "title": null,
+      "salaryRange": null
+    }
+  }
+}
