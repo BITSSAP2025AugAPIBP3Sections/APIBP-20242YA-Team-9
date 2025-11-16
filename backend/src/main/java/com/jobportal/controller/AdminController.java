@@ -13,6 +13,15 @@ import com.jobportal.entity.Job;
 import com.jobportal.entity.User;
 import com.jobportal.service.AdminService;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -20,6 +29,8 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/admin")
 @PreAuthorize("hasAuthority('ROLE_ADMIN')")  // Entire controller is admin-only
+@Tag(name = "Admin", description = "Administrative operations (Admin role required)")
+@SecurityRequirement(name = "Bearer Authentication")
 public class AdminController {
 
     private static final Logger logger = LoggerFactory.getLogger(AdminController.class);
@@ -28,6 +39,14 @@ public class AdminController {
     private AdminService adminService;
 
     // User Management Endpoints
+    @Operation(
+        summary = "Get all users",
+        description = "Retrieve all users with optional filtering by active status and role"
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Users retrieved successfully"),
+        @ApiResponse(responseCode = "403", description = "Access denied - Admin role required")
+    })
     @GetMapping("/users")
     public ResponseEntity<Map<String, Object>> getAllUsers(
             @RequestParam(required = false) String role,
@@ -47,7 +66,17 @@ public class AdminController {
     }
 
     @GetMapping("/users/{id}")
-    public ResponseEntity<Map<String, Object>> getUserById(@PathVariable Long id) {
+    @Operation(
+        summary = "Get user by ID",
+        description = "Retrieve detailed information about a specific user by their ID"
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "User found successfully"),
+        @ApiResponse(responseCode = "404", description = "User not found"),
+        @ApiResponse(responseCode = "403", description = "Access denied - Admin role required")
+    })
+    public ResponseEntity<Map<String, Object>> getUserById(
+            @Parameter(description = "User ID", required = true) @PathVariable Long id) {
         logger.debug("Getting user by id: {}", id);
         
         return adminService.getUserById(id)
@@ -71,7 +100,18 @@ public class AdminController {
     }
 
     @DeleteMapping("/users/{id}")
-    public ResponseEntity<Map<String, Object>> deleteUser(@PathVariable Long id) {
+    @Operation(
+        summary = "Delete user",
+        description = "Permanently delete a user account (Admin only)"
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "User deleted successfully"),
+        @ApiResponse(responseCode = "400", description = "Bad request - User deletion failed"),
+        @ApiResponse(responseCode = "403", description = "Access denied - Admin role required"),
+        @ApiResponse(responseCode = "404", description = "User not found")
+    })
+    public ResponseEntity<Map<String, Object>> deleteUser(
+            @Parameter(description = "User ID to delete", required = true) @PathVariable Long id) {
         logger.debug("Deleting user with id: {}", id);
         try {
             adminService.deleteUser(id);
@@ -98,9 +138,19 @@ public class AdminController {
     }
 
     @PutMapping("/users/{id}/status")
+    @Operation(
+        summary = "Update user status",
+        description = "Activate or deactivate a user account (Admin only)"
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "User status updated successfully"),
+        @ApiResponse(responseCode = "400", description = "Bad request - Status update failed"),
+        @ApiResponse(responseCode = "403", description = "Access denied - Admin role required"),
+        @ApiResponse(responseCode = "404", description = "User not found")
+    })
     public ResponseEntity<Map<String, Object>> updateUserStatus(
-            @PathVariable Long id,
-            @RequestParam boolean active) {
+            @Parameter(description = "User ID", required = true) @PathVariable Long id,
+            @Parameter(description = "Active status (true for active, false for inactive)", required = true) @RequestParam boolean active) {
         logger.debug("Updating user status. UserId: {}, active: {}", id, active);
         try {
             User user = adminService.updateUserStatus(id, active);
@@ -131,9 +181,17 @@ public class AdminController {
 
     // Job Management Endpoints
     @GetMapping("/jobs")
+    @Operation(
+        summary = "Get all jobs",
+        description = "Retrieve all jobs with optional filtering by active status and expiration"
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Jobs retrieved successfully"),
+        @ApiResponse(responseCode = "403", description = "Access denied - Admin role required")
+    })
     public ResponseEntity<Map<String, Object>> getAllJobs(
-            @RequestParam(required = false) Boolean active,
-            @RequestParam(defaultValue = "false") boolean includeExpired) {
+            @Parameter(description = "Filter by active status (true/false), null for all") @RequestParam(required = false) Boolean active,
+            @Parameter(description = "Include expired jobs in results") @RequestParam(defaultValue = "false") boolean includeExpired) {
         logger.debug("Getting all jobs with active: {} and includeExpired: {}", active, includeExpired);
         List<Job> jobs = adminService.getAllJobs(active, includeExpired);
         
@@ -149,9 +207,19 @@ public class AdminController {
     }
 
     @PutMapping("/jobs/{id}/status")
+    @Operation(
+        summary = "Update job status",
+        description = "Activate or deactivate a job posting (Admin only)"
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Job status updated successfully"),
+        @ApiResponse(responseCode = "400", description = "Bad request - Status update failed"),
+        @ApiResponse(responseCode = "403", description = "Access denied - Admin role required"),
+        @ApiResponse(responseCode = "404", description = "Job not found")
+    })
     public ResponseEntity<Map<String, Object>> updateJobStatus(
-            @PathVariable Long id,
-            @RequestParam boolean active) {
+            @Parameter(description = "Job ID", required = true) @PathVariable Long id,
+            @Parameter(description = "Active status (true for active, false for inactive)", required = true) @RequestParam boolean active) {
         logger.debug("Updating job status. JobId: {}, active: {}", id, active);
         try {
             Job job = adminService.updateJobStatus(id, active);
@@ -181,7 +249,18 @@ public class AdminController {
     }
 
     @DeleteMapping("/jobs/{id}")
-    public ResponseEntity<Map<String, Object>> deleteJob(@PathVariable Long id) {
+    @Operation(
+        summary = "Delete job",
+        description = "Permanently delete a job posting (Admin only)"
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Job deleted successfully"),
+        @ApiResponse(responseCode = "400", description = "Bad request - Job deletion failed"),
+        @ApiResponse(responseCode = "403", description = "Access denied - Admin role required"),
+        @ApiResponse(responseCode = "404", description = "Job not found")
+    })
+    public ResponseEntity<Map<String, Object>> deleteJob(
+            @Parameter(description = "Job ID to delete", required = true) @PathVariable Long id) {
         logger.debug("Deleting job with id: {}", id);
         try {
             adminService.deleteJob(id);
@@ -209,9 +288,18 @@ public class AdminController {
 
     // Application Management Endpoints
     @GetMapping("/applications")
+    @Operation(
+        summary = "Get all applications",
+        description = "Retrieve all job applications with optional filtering by status and archived state"
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Applications retrieved successfully"),
+        @ApiResponse(responseCode = "403", description = "Access denied - Admin role required"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
     public ResponseEntity<Map<String, Object>> getAllApplications(
-            @RequestParam(required = false) String status,
-            @RequestParam(defaultValue = "false") boolean includeArchived) {
+            @Parameter(description = "Filter by application status (PENDING, REVIEWED, APPROVED, REJECTED)") @RequestParam(required = false) String status,
+            @Parameter(description = "Include archived applications in results") @RequestParam(defaultValue = "false") boolean includeArchived) {
         logger.debug("Getting all applications with status: {} and includeArchived: {}", status, includeArchived);
         try {
             List<Application> applications = adminService.getAllApplications(status, includeArchived);
@@ -239,9 +327,19 @@ public class AdminController {
     }
 
     @PutMapping("/applications/{id}/status")
+    @Operation(
+        summary = "Update application status",
+        description = "Update the status of a job application (Admin only)"
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Application status updated successfully"),
+        @ApiResponse(responseCode = "400", description = "Bad request - Invalid status or update failed"),
+        @ApiResponse(responseCode = "403", description = "Access denied - Admin role required"),
+        @ApiResponse(responseCode = "404", description = "Application not found")
+    })
     public ResponseEntity<Map<String, Object>> updateApplicationStatus(
-            @PathVariable Long id,
-            @RequestParam String status) {
+            @Parameter(description = "Application ID", required = true) @PathVariable Long id,
+            @Parameter(description = "New application status (PENDING, REVIEWED, APPROVED, REJECTED)", required = true) @RequestParam String status) {
         logger.debug("Updating application status. ApplicationId: {}, status: {}", id, status);
         try {
             Application application = adminService.updateApplicationStatus(id, status);
@@ -271,7 +369,18 @@ public class AdminController {
     }
 
     @DeleteMapping("/applications/{id}")
-    public ResponseEntity<Map<String, Object>> deleteApplication(@PathVariable Long id) {
+    @Operation(
+        summary = "Delete application",
+        description = "Permanently delete a job application (Admin only)"
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Application deleted successfully"),
+        @ApiResponse(responseCode = "400", description = "Bad request - Application deletion failed"),
+        @ApiResponse(responseCode = "403", description = "Access denied - Admin role required"),
+        @ApiResponse(responseCode = "404", description = "Application not found")
+    })
+    public ResponseEntity<Map<String, Object>> deleteApplication(
+            @Parameter(description = "Application ID to delete", required = true) @PathVariable Long id) {
         logger.debug("Deleting application with id: {}", id);
         try {
             adminService.deleteApplication(id);
@@ -299,8 +408,26 @@ public class AdminController {
 
     // Bulk Operations
     @PostMapping("/users/bulk-status")
+    @Operation(
+        summary = "Bulk update user status",
+        description = "Update the active status of multiple users in a single operation"
+    )
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "200", 
+            description = "Bulk user status update completed successfully",
+            content = @Content(
+                mediaType = "application/json",
+                examples = @ExampleObject(
+                    value = "{\"1\": true, \"2\": false, \"3\": true}"
+                )
+            )
+        ),
+        @ApiResponse(responseCode = "400", description = "Bad request - Bulk update failed"),
+        @ApiResponse(responseCode = "403", description = "Access denied - Admin role required")
+    })
     public ResponseEntity<Map<String, Object>> bulkUpdateUserStatus(
-            @RequestBody Map<Long, Boolean> userStatusMap) {
+            @Parameter(description = "Map of user IDs to their new active status", required = true) @RequestBody Map<Long, Boolean> userStatusMap) {
         logger.debug("Bulk updating user status for {} users", userStatusMap.size());
         try {
             List<User> updatedUsers = adminService.bulkUpdateUserStatus(userStatusMap);
@@ -329,8 +456,26 @@ public class AdminController {
     }
 
     @PostMapping("/jobs/bulk-status")
+    @Operation(
+        summary = "Bulk update job status",
+        description = "Update the active status of multiple jobs in a single operation"
+    )
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "200", 
+            description = "Bulk job status update completed successfully",
+            content = @Content(
+                mediaType = "application/json",
+                examples = @ExampleObject(
+                    value = "{\"1\": true, \"2\": false, \"3\": true}"
+                )
+            )
+        ),
+        @ApiResponse(responseCode = "400", description = "Bad request - Bulk update failed"),
+        @ApiResponse(responseCode = "403", description = "Access denied - Admin role required")
+    })
     public ResponseEntity<Map<String, Object>> bulkUpdateJobStatus(
-            @RequestBody Map<Long, Boolean> jobStatusMap) {
+            @Parameter(description = "Map of job IDs to their new active status", required = true) @RequestBody Map<Long, Boolean> jobStatusMap) {
         logger.debug("Bulk updating job status for {} jobs", jobStatusMap.size());
         try {
             List<Job> updatedJobs = adminService.bulkUpdateJobStatus(jobStatusMap);

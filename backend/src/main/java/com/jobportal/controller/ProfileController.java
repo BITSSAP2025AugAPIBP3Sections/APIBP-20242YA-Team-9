@@ -11,10 +11,17 @@ import com.jobportal.dto.ProfileUpdateDTO;
 import com.jobportal.security.CustomUserDetails;
 import com.jobportal.service.ProfileService;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 import java.util.Map;
 
 @RestController
 @RequestMapping("/api/profiles")
+@Tag(name = "Profiles", description = "User profile management")
 public class ProfileController {
 
     @Autowired
@@ -23,6 +30,16 @@ public class ProfileController {
     // Get current user's profile
     @GetMapping("/me")
     @PreAuthorize("isAuthenticated()")
+    @Operation(
+        summary = "Get my profile",
+        description = "Retrieve the profile information of the current authenticated user"
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Profile retrieved successfully"),
+        @ApiResponse(responseCode = "401", description = "Unauthorized - User not authenticated"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
+    @SecurityRequirement(name = "bearerAuth")
     public ResponseEntity<Map<String, Object>> getMyProfile(
             @AuthenticationPrincipal CustomUserDetails userDetails) {
         try {
@@ -50,6 +67,15 @@ public class ProfileController {
 
     // Get any user's profile (public)
     @GetMapping("/{userId}")
+    @Operation(
+        summary = "Get user profile by ID",
+        description = "Retrieve public profile information of any user by their ID"
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Profile retrieved successfully"),
+        @ApiResponse(responseCode = "400", description = "Bad request - User not found"),
+        @ApiResponse(responseCode = "404", description = "User profile not found")
+    })
     public ResponseEntity<Map<String, Object>> getUserProfile(@PathVariable Long userId) {
         try {
             Map<String, Object> profile = profileService.getUserProfile(userId);
@@ -77,6 +103,17 @@ public class ProfileController {
     // Update current user's profile
     @PutMapping("/me")
     @PreAuthorize("isAuthenticated()")
+    @Operation(
+        summary = "Update my profile",
+        description = "Update the profile information of the current authenticated user"
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Profile updated successfully"),
+        @ApiResponse(responseCode = "400", description = "Bad request - Invalid profile data"),
+        @ApiResponse(responseCode = "401", description = "Unauthorized - User not authenticated"),
+        @ApiResponse(responseCode = "422", description = "Validation error")
+    })
+    @SecurityRequirement(name = "bearerAuth")
     public ResponseEntity<Map<String, Object>> updateMyProfile(
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @Valid @RequestBody ProfileUpdateDTO updateDTO) {
@@ -108,6 +145,19 @@ public class ProfileController {
     // Admin can update any user's profile
     @PutMapping("/{userId}")
     @PreAuthorize("hasRole('ADMIN')")
+    @Operation(
+        summary = "Admin: Update user profile",
+        description = "Allow administrators to update any user's profile information"
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Profile updated successfully"),
+        @ApiResponse(responseCode = "400", description = "Bad request - Invalid profile data"),
+        @ApiResponse(responseCode = "401", description = "Unauthorized - User not authenticated"),
+        @ApiResponse(responseCode = "403", description = "Forbidden - Admin access required"),
+        @ApiResponse(responseCode = "404", description = "User not found"),
+        @ApiResponse(responseCode = "422", description = "Validation error")
+    })
+    @SecurityRequirement(name = "bearerAuth")
     public ResponseEntity<Map<String, Object>> updateUserProfile(
             @PathVariable Long userId,
             @Valid @RequestBody ProfileUpdateDTO updateDTO) {

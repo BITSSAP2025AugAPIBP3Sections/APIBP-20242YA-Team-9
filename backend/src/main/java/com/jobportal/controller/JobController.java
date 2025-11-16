@@ -13,6 +13,16 @@ import com.jobportal.entity.Job;
 import com.jobportal.security.CustomUserDetails;
 import com.jobportal.service.JobService;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,6 +34,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/jobs")
+@Tag(name = "Jobs", description = "Job management and search operations")
 public class JobController {
     private static final Logger logger = LoggerFactory.getLogger(JobController.class);
 
@@ -32,7 +43,16 @@ public class JobController {
 
 
 
-    // Create a new job posting (COMPANY only)
+    @Operation(
+        summary = "Create a new job posting",
+        description = "Create a new job posting (requires COMPANY role)",
+        security = @SecurityRequirement(name = "Bearer Authentication")
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Job created successfully"),
+        @ApiResponse(responseCode = "400", description = "Invalid job data"),
+        @ApiResponse(responseCode = "403", description = "Access denied - COMPANY role required")
+    })
     @PostMapping
     @PreAuthorize("hasRole('COMPANY')")
     public ResponseEntity<Map<String, Object>> createJob(
@@ -101,12 +121,19 @@ public class JobController {
         }
     }
 
-    // Get all active jobs (Public)
+    @Operation(
+        summary = "Get all active jobs",
+        description = "Retrieve all active job postings with optional filtering by location, title, and salary range (Public endpoint)"
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Jobs retrieved successfully"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
     @GetMapping
     public ResponseEntity<Map<String, Object>> getAllActiveJobs(
-            @RequestParam(required = false) String location,
-            @RequestParam(required = false) String title,
-            @RequestParam(required = false) String salaryRange) {
+            @Parameter(description = "Filter by job location") @RequestParam(required = false) String location,
+            @Parameter(description = "Filter by job title") @RequestParam(required = false) String title,
+            @Parameter(description = "Filter by salary range") @RequestParam(required = false) String salaryRange) {
         try {
             List<Job> jobs = jobService.searchJobs(location, title, salaryRange);
             List<Map<String, Object>> jobsList = jobs.stream()

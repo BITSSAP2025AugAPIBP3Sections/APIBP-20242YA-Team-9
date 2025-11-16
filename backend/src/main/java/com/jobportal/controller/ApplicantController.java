@@ -19,6 +19,15 @@ import com.jobportal.entity.User;
 import com.jobportal.security.CustomUserDetails;
 import com.jobportal.service.ApplicantService;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.nio.file.Path;
@@ -31,6 +40,8 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/applicant")
 @PreAuthorize("hasRole('APPLICANT')")  // Entire controller is applicant-only
+@Tag(name = "Applicant", description = "Applicant-specific operations")
+@SecurityRequirement(name = "Bearer Authentication")
 public class ApplicantController {
 
     @Value("${app.upload.dir:${user.home}/FSAD-job-portal/Job-portal/frontend/public/uploads/resumes}")
@@ -41,6 +52,15 @@ public class ApplicantController {
 
     // Get applicant profile
     @GetMapping("/profile")
+    @Operation(
+        summary = "Get applicant profile",
+        description = "Retrieve the current applicant's profile information"
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Profile retrieved successfully"),
+        @ApiResponse(responseCode = "403", description = "Access denied - Applicant role required"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
     public ResponseEntity<Map<String, Object>> getProfile(
             @AuthenticationPrincipal CustomUserDetails userDetails) {
         try {
@@ -77,9 +97,18 @@ public class ApplicantController {
 
     // Update applicant profile
     @PutMapping("/profile")
+    @Operation(
+        summary = "Update applicant profile",
+        description = "Update the current applicant's profile information such as name and bio"
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Profile updated successfully"),
+        @ApiResponse(responseCode = "400", description = "Bad request - Invalid profile data or missing request body"),
+        @ApiResponse(responseCode = "403", description = "Access denied - Applicant role required")
+    })
     public ResponseEntity<Map<String, Object>> updateProfile(
             @AuthenticationPrincipal CustomUserDetails userDetails,
-            @RequestBody(required = false) User updatedUser) {
+            @Parameter(description = "Updated profile information") @RequestBody(required = false) User updatedUser) {
         try {
             // Validate request body
             if (updatedUser == null) {
@@ -127,9 +156,18 @@ public class ApplicantController {
 
     // Upload resume
     @PostMapping("/resume")
+    @Operation(
+        summary = "Upload resume",
+        description = "Upload a resume file (PDF, DOC, DOCX) for the current applicant"
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Resume uploaded successfully"),
+        @ApiResponse(responseCode = "400", description = "Bad request - Invalid file format or upload failed"),
+        @ApiResponse(responseCode = "403", description = "Access denied - Applicant role required")
+    })
     public ResponseEntity<Map<String, Object>> uploadResume(
             @AuthenticationPrincipal CustomUserDetails userDetails,
-            @RequestParam("file") MultipartFile file) {
+            @Parameter(description = "Resume file (PDF, DOC, DOCX)", required = true) @RequestParam("file") MultipartFile file) {
         try {
             String resumeUrl = applicantService.uploadResume(userDetails.getUser().getId(), file);
             
@@ -158,9 +196,19 @@ public class ApplicantController {
     // Get resume file
     @GetMapping("/resume/{userId}/{filename}")
     @PreAuthorize("hasAnyRole('COMPANY', 'ADMIN', 'APPLICANT')")
+    @Operation(
+        summary = "Download resume file",
+        description = "Download a resume file. Access restricted to: the applicant themselves, companies reviewing applications, or admins"
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Resume file retrieved successfully"),
+        @ApiResponse(responseCode = "403", description = "Access denied - Insufficient permissions"),
+        @ApiResponse(responseCode = "404", description = "Resume file not found"),
+        @ApiResponse(responseCode = "400", description = "Bad request - Invalid file path")
+    })
     public ResponseEntity<Resource> getResume(
-            @PathVariable Long userId,
-            @PathVariable String filename,
+            @Parameter(description = "User ID who owns the resume", required = true) @PathVariable Long userId,
+            @Parameter(description = "Resume filename", required = true) @PathVariable String filename,
             @AuthenticationPrincipal CustomUserDetails userDetails) {
         try {
             // Security check - only allow access if:
@@ -209,10 +257,19 @@ public class ApplicantController {
 
     // Get all available jobs
     @GetMapping("/jobs")
+    @Operation(
+        summary = "Search available jobs",
+        description = "Retrieve all active job postings with optional filtering by location, title, and salary range"
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Jobs retrieved successfully"),
+        @ApiResponse(responseCode = "403", description = "Access denied - Applicant role required"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
     public ResponseEntity<Map<String, Object>> getAllJobs(
-            @RequestParam(required = false) String location,
-            @RequestParam(required = false) String title,
-            @RequestParam(required = false) String salaryRange) {
+            @Parameter(description = "Filter by job location") @RequestParam(required = false) String location,
+            @Parameter(description = "Filter by job title keywords") @RequestParam(required = false) String title,
+            @Parameter(description = "Filter by salary range") @RequestParam(required = false) String salaryRange) {
         try {
             List<Job> jobs = applicantService.searchJobs(location, title, salaryRange);
             
@@ -242,10 +299,19 @@ public class ApplicantController {
 
     // Apply for a job
     @PostMapping("/apply/{jobId}")
+    @Operation(
+        summary = "Apply for a job",
+        description = "Submit an application for a specific job posting"
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Application submitted successfully"),
+        @ApiResponse(responseCode = "400", description = "Bad request - Job not found, already applied, or application failed"),
+        @ApiResponse(responseCode = "403", description = "Access denied - Applicant role required")
+    })
     public ResponseEntity<Map<String, Object>> applyToJob(
             @AuthenticationPrincipal CustomUserDetails userDetails,
-            @PathVariable Long jobId,
-            @RequestParam(required = false) String resumeUrl) {
+            @Parameter(description = "Job ID to apply for", required = true) @PathVariable Long jobId,
+            @Parameter(description = "Optional resume URL to attach to application") @RequestParam(required = false) String resumeUrl) {
         try {
             Application application = applicantService.applyToJob(
                 userDetails.getUser().getId(), jobId, resumeUrl);
@@ -279,6 +345,15 @@ public class ApplicantController {
 
     // Get my applications
     @GetMapping("/applications")
+    @Operation(
+        summary = "Get my applications",
+        description = "Retrieve all job applications submitted by the current applicant"
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Applications retrieved successfully"),
+        @ApiResponse(responseCode = "403", description = "Access denied - Applicant role required"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
     public ResponseEntity<Map<String, Object>> getMyApplications(
             @AuthenticationPrincipal CustomUserDetails userDetails) {
         try {
@@ -320,9 +395,18 @@ public class ApplicantController {
 
     // Get application status
     @GetMapping("/applications/{applicationId}")
+    @Operation(
+        summary = "Get application details",
+        description = "Retrieve detailed information about a specific application including status, job details, and company information"
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Application details retrieved successfully"),
+        @ApiResponse(responseCode = "400", description = "Bad request - Application not found or access denied"),
+        @ApiResponse(responseCode = "403", description = "Access denied - Applicant role required or not your application")
+    })
     public ResponseEntity<Map<String, Object>> getApplicationStatus(
             @AuthenticationPrincipal CustomUserDetails userDetails,
-            @PathVariable Long applicationId) {
+            @Parameter(description = "Application ID", required = true) @PathVariable Long applicationId) {
         try {
             Application application = applicantService.getApplicationStatus(
                     userDetails.getUser().getId(), applicationId);
@@ -374,9 +458,18 @@ public class ApplicantController {
 
     // Withdraw application
     @DeleteMapping("/applications/{applicationId}")
+    @Operation(
+        summary = "Withdraw application",
+        description = "Cancel/withdraw a previously submitted job application"
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Application withdrawn successfully"),
+        @ApiResponse(responseCode = "400", description = "Bad request - Application not found, already processed, or withdrawal failed"),
+        @ApiResponse(responseCode = "403", description = "Access denied - Applicant role required or not your application")
+    })
     public ResponseEntity<Map<String, Object>> withdrawApplication(
             @AuthenticationPrincipal CustomUserDetails userDetails,
-            @PathVariable Long applicationId) {
+            @Parameter(description = "Application ID to withdraw", required = true) @PathVariable Long applicationId) {
         try {
             applicantService.withdrawApplication(userDetails.getUser().getId(), applicationId);
             

@@ -14,11 +14,21 @@ import com.jobportal.repository.UserRepository;
 import com.jobportal.security.jwt.JwtUtils;
 import com.jobportal.service.EmailService;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 import java.util.Map;
 import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/auth")
+@Tag(name = "Authentication", description = "User authentication and registration endpoints")
 public class AuthController {
 
     @Autowired private UserRepository userRepo;
@@ -26,6 +36,71 @@ public class AuthController {
     @Autowired private JwtUtils jwtUtils;
     @Autowired private EmailService emailService;
 
+    @Operation(
+        summary = "Register a new user",
+        description = "Create a new user account with the specified role (ADMIN, COMPANY, or APPLICANT)",
+        requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+            description = "User registration data",
+            required = true,
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = RegisterRequest.class),
+                examples = @ExampleObject(
+                    name = "Register Example",
+                    value = """
+                        {
+                          "name": "John Doe",
+                          "email": "john@example.com",
+                          "password": "securePassword123",
+                          "role": "APPLICANT"
+                        }
+                        """
+                )
+            )
+        )
+    )
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "User registered successfully",
+            content = @Content(
+                mediaType = "application/json",
+                examples = @ExampleObject(
+                    value = """
+                        {
+                          "status": "success",
+                          "message": "User registered successfully",
+                          "data": {
+                            "userId": 123,
+                            "name": "John Doe",
+                            "email": "john@example.com",
+                            "role": "APPLICANT"
+                          },
+                          "action": "registration",
+                          "timestamp": "2024-11-16T10:30:00Z"
+                        }
+                        """
+                )
+            )
+        ),
+        @ApiResponse(
+            responseCode = "400",
+            description = "Registration failed - Email already exists or validation error",
+            content = @Content(
+                mediaType = "application/json",
+                examples = @ExampleObject(
+                    value = """
+                        {
+                          "status": "error",
+                          "message": "Registration failed: Email already exists",
+                          "email": "john@example.com",
+                          "timestamp": "2024-11-16T10:30:00Z"
+                        }
+                        """
+                )
+            )
+        )
+    })
     @PostMapping("/register")
     public ResponseEntity<Map<String, Object>> register(@Validated @RequestBody RegisterRequest req) {
         try {
@@ -72,6 +147,75 @@ public class AuthController {
         }
     }
 
+    @Operation(
+        summary = "User login",
+        description = "Authenticate user and return JWT token with user details and expiration information",
+        requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+            description = "User login credentials",
+            required = true,
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = LoginRequest.class),
+                examples = @ExampleObject(
+                    name = "Login Example",
+                    value = """
+                        {
+                          "email": "john@example.com",
+                          "password": "securePassword123"
+                        }
+                        """
+                )
+            )
+        )
+    )
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Login successful",
+            content = @Content(
+                mediaType = "application/json",
+                examples = @ExampleObject(
+                    value = """
+                        {
+                          "status": "success",
+                          "message": "Login successful",
+                          "data": {
+                            "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+                            "expiresAt": 1700123400000,
+                            "expiresAtISO": "Sat Nov 16 12:30:00 UTC 2024",
+                            "user": {
+                              "id": 123,
+                              "name": "John Doe",
+                              "email": "john@example.com",
+                              "role": "APPLICANT",
+                              "bio": ""
+                            }
+                          },
+                          "action": "authentication",
+                          "timestamp": "2024-11-16T10:30:00Z"
+                        }
+                        """
+                )
+            )
+        ),
+        @ApiResponse(
+            responseCode = "401",
+            description = "Authentication failed - Invalid credentials",
+            content = @Content(
+                mediaType = "application/json",
+                examples = @ExampleObject(
+                    value = """
+                        {
+                          "status": "error",
+                          "message": "Authentication failed: Invalid email or password",
+                          "email": "john@example.com",
+                          "timestamp": "2024-11-16T10:30:00Z"
+                        }
+                        """
+                )
+            )
+        )
+    })
     @PostMapping("/login")
     public ResponseEntity<Map<String, Object>> login(@Validated @RequestBody LoginRequest req) {
         try {
