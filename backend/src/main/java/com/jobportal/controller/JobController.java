@@ -3,14 +3,10 @@ package com.jobportal.controller;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 
-import com.fasterxml.jackson.databind.exc.InvalidFormatException;
-import com.fasterxml.jackson.databind.exc.MismatchedInputException;
 import com.jobportal.dto.ApplicationStatusDTO;
 import com.jobportal.entity.Application;
 import com.jobportal.entity.Job;
@@ -34,51 +30,7 @@ public class JobController {
     @Autowired
     private JobService jobService;
 
-    // Handle JSON parsing errors
-    @ExceptionHandler(HttpMessageNotReadableException.class)
-    public ResponseEntity<Map<String, Object>> handleHttpMessageNotReadable(HttpMessageNotReadableException ex) {
-        Map<String, Object> errorResponse = new HashMap<>();
-        errorResponse.put("status", "error");
-        
-        String message = "Invalid JSON format or data type mismatch";
-        Throwable cause = ex.getCause();
-        
-        if (cause instanceof InvalidFormatException) {
-            InvalidFormatException ife = (InvalidFormatException) cause;
-            String fieldName = ife.getPath().isEmpty() ? "unknown" : 
-                ife.getPath().get(ife.getPath().size() - 1).getFieldName();
-            message = String.format("Invalid value for field '%s'. Expected %s but received: %s", 
-                fieldName, ife.getTargetType().getSimpleName(), ife.getValue());
-        } else if (cause instanceof MismatchedInputException) {
-            MismatchedInputException mie = (MismatchedInputException) cause;
-            String fieldName = mie.getPath().isEmpty() ? "unknown" : 
-                mie.getPath().get(mie.getPath().size() - 1).getFieldName();
-            message = String.format("Missing or invalid field '%s'. Expected %s", 
-                fieldName, mie.getTargetType().getSimpleName());
-        }
-        
-        errorResponse.put("message", message);
-        return ResponseEntity.badRequest().body(errorResponse);
-    }
 
-    // Handle validation errors
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<Map<String, Object>> handleValidationExceptions(MethodArgumentNotValidException ex) {
-        Map<String, Object> errorResponse = new HashMap<>();
-        Map<String, String> errors = new HashMap<>();
-        
-        ex.getBindingResult().getAllErrors().forEach((error) -> {
-            String fieldName = ((org.springframework.validation.FieldError) error).getField();
-            String errorMessage = error.getDefaultMessage();
-            errors.put(fieldName, errorMessage);
-        });
-        
-        errorResponse.put("status", "error");
-        errorResponse.put("message", "Validation failed for one or more fields");
-        errorResponse.put("errors", errors);
-        
-        return ResponseEntity.badRequest().body(errorResponse);
-    }
 
     // Create a new job posting (COMPANY only)
     @PostMapping

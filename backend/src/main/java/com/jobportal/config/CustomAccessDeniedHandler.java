@@ -24,8 +24,15 @@ public class CustomAccessDeniedHandler implements AccessDeniedHandler {
     public void handle(HttpServletRequest request, HttpServletResponse response, 
                        AccessDeniedException accessDeniedException) throws IOException, ServletException {
         
-        logger.warn("Access denied for request: {} - {} | Error: {}", 
-                   request.getMethod(), request.getRequestURI(), accessDeniedException.getMessage());
+        // Create detailed log message
+        String logMessage = String.format("403 FORBIDDEN - Access denied for %s %s | User-Agent: %s | Remote-Addr: %s | Error: %s", 
+                   request.getMethod(), 
+                   request.getRequestURI(), 
+                   request.getHeader("User-Agent"), 
+                   request.getRemoteAddr(),
+                   accessDeniedException.getMessage());
+        
+        logger.warn(logMessage);
         
         response.setStatus(HttpServletResponse.SC_FORBIDDEN);
         response.setContentType("application/json");
@@ -37,75 +44,40 @@ public class CustomAccessDeniedHandler implements AccessDeniedHandler {
         errorResponse.put("method", request.getMethod());
         errorResponse.put("timestamp", java.time.Instant.now().toString());
         
-        // Get specific message based on the request path and method
-        String message = getSpecificErrorMessage(request.getRequestURI(), request.getMethod());
-        errorResponse.put("message", message);
-        errorResponse.put("suggestion", getSuggestion(request.getRequestURI()));
+        // Include the actual exception message and log details
+        errorResponse.put("message", "Access Forbidden: " + accessDeniedException.getMessage());
+        errorResponse.put("logMessage", logMessage);
+        errorResponse.put("userAgent", request.getHeader("User-Agent"));
+        errorResponse.put("remoteAddress", request.getRemoteAddr());
         
-        response.getWriter().write(objectMapper.writeValueAsString(errorResponse));
+        // Get generic guidance
+        errorResponse.put("suggestion", getGenericSuggestion(request.getRequestURI(), request.getMethod()));
+        
+        // Log the structured response being sent
+        String responseJson = objectMapper.writeValueAsString(errorResponse);
+        logger.info("Sending 403 response: {}", responseJson);
+        
+        response.getWriter().write(responseJson);
     }
     
-    private String getSpecificErrorMessage(String requestPath, String method) {
-        // Admin endpoints
+    private String getGenericSuggestion(String requestPath, String method) {
+        // Generic suggestions based on endpoint patterns
+        String requiredRole = "unknown";
+        String actionType = method.toLowerCase();
+        
         if (requestPath.startsWith("/api/admin")) {
-            if (requestPath.contains("/users")) {
-                return "Access denied. Only administrators can manage user accounts.";
-            } else if (requestPath.contains("/jobs")) {
-                return "Access denied. Only administrators can manage job listings globally.";
-            } else if (requestPath.contains("/applications")) {
-                return "Access denied. Only administrators can manage all applications.";
-            }
-            return "Access denied. Administrator privileges required for this operation.";
-        }
-        
-        // Applicant endpoints
-        if (requestPath.startsWith("/api/applicant")) {
-            if (requestPath.contains("/profile")) {
-                return "Access denied. Only job applicants can access applicant profiles.";
-            } else if (requestPath.contains("/resume")) {
-                return "Access denied. Only job applicants can manage resumes.";
-            } else if (requestPath.contains("/apply")) {
-                return "Access denied. Only job applicants can apply for jobs.";
-            } else if (requestPath.contains("/applications")) {
-                return "Access denied. Only job applicants can view their applications.";
-            }
-            return "Access denied. Applicant role required to access this feature.";
-        }
-        
-        // Company/Job management endpoints
-        if (requestPath.startsWith("/api/jobs")) {
-            if (method.equals("POST")) {
-                return "Access denied. Only companies can create job postings.";
-            } else if (method.equals("PUT") || method.equals("DELETE")) {
-                return "Access denied. Only job owners (companies) can modify job postings.";
-            } else if (requestPath.contains("/applications")) {
-                return "Access denied. Only the hiring company can view job applications.";
-            } else if (requestPath.contains("/company")) {
-                return "Access denied. Only companies can view their job listings.";
-            }
-        }
-        
-        // Profile endpoints
-        if (requestPath.startsWith("/api/profiles")) {
-            if (method.equals("PUT")) {
-                return "Access denied. You can only update your own profile or need admin privileges.";
-            }
-        }
-        
-        // Default message
-        return "Access denied. You don't have the required permissions to access this resource.";
-    }
-    
-    private String getSuggestion(String requestPath) {
-        if (requestPath.startsWith("/api/admin")) {
-            return "Please login with an administrator account to access admin features.";
+            requiredRole = "ADMIN";
         } else if (requestPath.startsWith("/api/applicant")) {
-            return "Please login with a job applicant account to access these features.";
-        } else if (requestPath.startsWith("/api/jobs") && (requestPath.contains("applications") || requestPath.contains("company"))) {
-            return "Please login with a company account to manage jobs and applications.";
-        } else if (requestPath.startsWith("/api/profiles")) {
-            return "Please ensure you're accessing your own profile or have proper authorization.";
+            requiredRole = "APPLICANT";
+        } else if (requestPath.startsWith("/api/jobs") && (method.equals("POST") || method.equals("PUT") || method.equals("DELETE") || requestPath.contains("company"))) {
+            requiredRole = "COMPANY";
+        } else if (requestPath.startsWith("/api/profiles") && method.equals("PUT")) {
+            return "Ensure you're updating your own profile or have administrative privileges. Check authentication token and user permissions.";
         }
-        return "Please check your account permissions or contact support if you believe this is an error.";
+        
+        return String.format("This %s operation on '%s' requires %s role privileges. " +
+                           "Please verify: 1) You're authenticated, 2) Your token is valid, 3) You have the correct role (%s). " +
+                           "If you believe this is an error, contact support.", 
+                           actionType, requestPath, requiredRole, requiredRole);
     }
 }

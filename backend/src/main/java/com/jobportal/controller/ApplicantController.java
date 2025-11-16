@@ -79,8 +79,20 @@ public class ApplicantController {
     @PutMapping("/profile")
     public ResponseEntity<Map<String, Object>> updateProfile(
             @AuthenticationPrincipal CustomUserDetails userDetails,
-            @RequestBody User updatedUser) {
+            @RequestBody(required = false) User updatedUser) {
         try {
+            // Validate request body
+            if (updatedUser == null) {
+                Map<String, Object> response = Map.of(
+                    "status", "error",
+                    "message", "Request body is required for profile update",
+                    "suggestion", "Please provide profile data in JSON format: {\"name\": \"John Doe\", \"bio\": \"Software Developer\"}",
+                    "userId", userDetails.getUser().getId(),
+                    "timestamp", java.time.Instant.now().toString()
+                );
+                return ResponseEntity.badRequest().body(response);
+            }
+            
             User user = applicantService.updateProfile(userDetails.getUser().getId(), updatedUser);
             Map<String, Object> userData = Map.ofEntries(
                     Map.entry("id", String.valueOf(user.getId())),

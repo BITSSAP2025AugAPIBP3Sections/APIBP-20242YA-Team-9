@@ -74,6 +74,7 @@ public class SecurityConfig {
                             .requestMatchers("/graphql").permitAll()
                             .requestMatchers("/graphiql/**").permitAll()
                             .requestMatchers("/graphql/**").permitAll()
+                            .requestMatchers("/error").permitAll()  // Allow error handling endpoint
                             .requestMatchers("/api/jobs/{id}/status").hasAuthority("ROLE_COMPANY")
                             .requestMatchers("/api/admin/**").hasAuthority("ROLE_ADMIN")
                             .requestMatchers("/api/applicant/**").hasAuthority("ROLE_APPLICANT")
