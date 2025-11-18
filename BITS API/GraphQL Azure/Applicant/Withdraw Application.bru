@@ -1,0 +1,24 @@
+meta {
+  name: Withdraw Application
+  type: http
+  seq: 6
+}
+
+post {
+  url: https://job-portal-bwc9haethua7h0gw.malaysiawest-01.azurewebsites.net/graphql
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{jwt_token}}
+}
+
+body:json {
+  {
+    "query": "mutation WithdrawApplication($applicationId: ID!) { withdrawApplication(applicationId: $applicationId) { message } }",
+    "variables": {
+      "applicationId": "1"
+    }
+  }
+}

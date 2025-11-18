@@ -1,0 +1,44 @@
+meta {
+  name: Apply to jobs
+  type: http
+  seq: 6
+}
+
+post {
+  url: {{baseUrl}}/api/applicant/apply/{{jobId}}?resumeUrl={{resumeUrl}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{applicantAuthToken}}
+}
+
+vars {
+  resumeUrl: /api/applicant/resume/6/a8623057-e434-4794-be10-a70448e6c633.pdf
+}
+
+tests {
+  test("Status is 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+
+  test("Response has success status", function() {
+    expect(res.body.status).to.equal("success");
+  });
+
+  test("Application data is returned", function() {
+    expect(res.body.data).to.be.an("object");
+    expect(res.body.data.applicationId).to.be.a("number");
+    expect(res.body.data.jobId).to.be.a("number");
+    expect(res.body.data.status).to.be.a("string");
+    expect(res.body.data.appliedAt).to.be.a("string");
+  });
+
+  test("Response contains required fields", function() {
+    expect(res.body.message).to.equal("Applied successfully to job");
+    expect(res.body.action).to.equal("apply");
+    expect(res.body.userId).to.be.a("number");
+    expect(res.body.timestamp).to.be.a("string");
+  });
+}

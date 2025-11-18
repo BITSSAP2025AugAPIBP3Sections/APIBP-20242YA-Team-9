@@ -1,0 +1,24 @@
+meta {
+  name: Delete Job
+  type: http
+  seq: 4
+}
+
+post {
+  url: http://localhost:8080/graphql
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{jwt_token}}
+}
+
+body:json {
+  {
+    "query": "mutation DeleteJob($id: ID!) { deleteJob(id: $id) { message } }",
+    "variables": {
+      "id": "1"
+    }
+  }
+}

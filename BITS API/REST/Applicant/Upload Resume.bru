@@ -1,0 +1,39 @@
+meta {
+  name: Upload Resume
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{baseUrl}}/api/applicant/resume
+  body: multipartForm
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{authToken}}
+}
+
+body:multipart-form {
+  file: @file(/Users/I528973/Desktop/Soumik_Resume.pdf)
+}
+
+vars:post-response {
+  resumeUrl: res.body.data.resumeUrl
+  filename: res.body.data.filename
+}
+
+tests {
+  test("Status is 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+  
+  test("Response has success status", function() {
+    expect(res.body.status).to.equal("success");
+  });
+  
+  test("Resume URL is returned", function() {
+    expect(res.body.data.resumeUrl).to.be.a("string");
+    expect(res.body.data.filename).to.be.a("string");
+  });
+}

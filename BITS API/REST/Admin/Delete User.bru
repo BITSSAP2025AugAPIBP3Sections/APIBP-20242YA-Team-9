@@ -1,0 +1,36 @@
+meta {
+  name: Delete User
+  type: http
+  seq: 4
+}
+
+delete {
+  url: {{baseUrl}}/api/admin/users/{{userId}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{adminAuthToken}}
+}
+
+vars {
+  userId: 1
+}
+
+tests {
+  test("Status is 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+
+  test("Response has success status", function() {
+    expect(res.body.status).to.equal("success");
+  });
+
+  test("Response contains required fields", function() {
+    expect(res.body.message).to.equal("User deleted successfully");
+    expect(res.body.userId).to.be.a("number");
+    expect(res.body.action).to.equal("delete");
+    expect(res.body.timestamp).to.be.a("string");
+  });
+}

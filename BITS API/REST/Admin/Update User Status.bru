@@ -1,0 +1,43 @@
+meta {
+  name: Update User Status
+  type: http
+  seq: 5
+}
+
+put {
+  url: {{baseUrl}}/api/admin/users/{{userId}}/status?active={{active}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{adminAuthToken}}
+}
+
+vars {
+  userId: 1
+  active: true
+}
+
+tests {
+  test("Status is 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+
+  test("Response has success status", function() {
+    expect(res.body.status).to.equal("success");
+  });
+
+  test("User data is returned", function() {
+    expect(res.body.data).to.be.an("object");
+    expect(res.body.data.id).to.be.a("number");
+    expect(res.body.data.active).to.be.a("boolean");
+  });
+
+  test("Response contains required fields", function() {
+    expect(res.body.message).to.equal("User status updated successfully");
+    expect(res.body.userId).to.be.a("number");
+    expect(res.body.action).to.equal("status_update");
+    expect(res.body.timestamp).to.be.a("string");
+  });
+}
