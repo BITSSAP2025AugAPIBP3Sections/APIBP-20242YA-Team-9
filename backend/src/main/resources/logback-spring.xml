@@ -1,13 +1,32 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
-    
+
+    <statusListener class="ch.qos.logback.core.status.OnConsoleStatusListener"/>
+    <property name="SWO_HOST" value="syslog.collector.ap-01.cloud.solarwinds.com"/>
+    <property name="SWO_PORT" value="6514"/>
+    <property name="SWO_TOKEN" value="jwidHmzpssYs4NZWKQ3kQ1emJdfmxv2zFaprxgiHisBqZuBlJKVreVLqPAstyCDRmsvArN4"/>
+    <property name="APP_NAME" value="Job-Portal"/>
+
+    <property name="SYSLOG_PATTERN" value="%d{MMM dd HH:mm:ss} %property{HOSTNAME} ${APP_NAME}: %-5level %logger{30} - %msg [${SWO_TOKEN}@41058]%n%xEx"/>
+
     <!-- Console appender for regular logs -->
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
             <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
         </encoder>
     </appender>
-    
+
+    <appender name="SYSLOG" class="com.papertrailapp.logback.Syslog4jAppender">
+        <layout class="ch.qos.logback.classic.PatternLayout">
+            <pattern>${SYSLOG_PATTERN}</pattern>
+        </layout>
+
+        <syslogConfig class="org.productivity.java.syslog4j.impl.net.tcp.ssl.SSLTCPNetSyslogConfig">
+            <host>${SWO_HOST}</host>
+            <port>${SWO_PORT}</port>
+        </syslogConfig>
+    </appender>
+
     <!-- File appender for regular logs -->
     <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>app.log</file>
@@ -21,7 +40,7 @@
             <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
         </encoder>
     </appender>
-    
+
     <!-- Special console appender for audit logs with enhanced formatting -->
     <appender name="AUDIT_CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
@@ -31,7 +50,7 @@
             <level>INFO</level>
         </filter>
     </appender>
-    
+
     <!-- File appender for audit logs with clean formatting -->
     <appender name="AUDIT_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>audit.log</file>
@@ -53,18 +72,21 @@
     <logger name="AUDIT_LOGGER" level="INFO" additivity="false">
         <appender-ref ref="AUDIT_CONSOLE" />
         <appender-ref ref="AUDIT_FILE" />
+        <appender-ref ref="SYSLOG" />
     </logger>
     
     <!-- Security audit logger - logs to both console and file -->
     <logger name="com.jobportal.audit" level="DEBUG" additivity="false">
         <appender-ref ref="AUDIT_CONSOLE" />
         <appender-ref ref="AUDIT_FILE" />
+        <appender-ref ref="SYSLOG" />
     </logger>
     
     <!-- Root logger - logs to both console and file -->
     <root level="INFO">
         <appender-ref ref="CONSOLE" />
         <appender-ref ref="FILE" />
+        <appender-ref ref="SYSLOG" />
     </root>
     
     <!-- Set specific log levels for various components -->
@@ -72,5 +94,5 @@
     <logger name="org.springframework.web" level="INFO" />
     <logger name="com.jobportal.controller" level="DEBUG" />
     <logger name="com.jobportal.service" level="DEBUG" />
-    
+
 </configuration>
