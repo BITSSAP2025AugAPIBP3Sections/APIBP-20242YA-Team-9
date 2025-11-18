@@ -38,9 +38,9 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/applicant")
+@RequestMapping("/api/v1/applicant")
 @PreAuthorize("hasRole('APPLICANT')")  // Entire controller is applicant-only
-@Tag(name = "Applicant", description = "Applicant-specific operations")
+@Tag(name = "Applicant v1", description = "Applicant-specific operations - Version 1 API")
 @SecurityRequirement(name = "Bearer Authentication")
 public class ApplicantController {
 

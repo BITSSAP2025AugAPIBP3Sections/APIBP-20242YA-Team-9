@@ -25,9 +25,9 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/admin/audit")
+@RequestMapping("/api/v1/admin/audit")
 @PreAuthorize("hasAuthority('ROLE_ADMIN')")
-@Tag(name = "Audit", description = "Audit log management and viewing (Admin only)")
+@Tag(name = "Audit v1", description = "Audit log management and viewing (Admin only) - Version 1 API")
 @SecurityRequirement(name = "bearerAuth")
 public class AuditController {
 

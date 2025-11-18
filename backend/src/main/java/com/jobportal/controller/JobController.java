@@ -33,8 +33,8 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/jobs")
-@Tag(name = "Jobs", description = "Job management and search operations")
+@RequestMapping("/api/v1/jobs")
+@Tag(name = "Jobs v1", description = "Job management and search operations - Version 1 API")
 public class JobController {
     private static final Logger logger = LoggerFactory.getLogger(JobController.class);
 

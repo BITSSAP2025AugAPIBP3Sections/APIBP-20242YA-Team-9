@@ -20,8 +20,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/profiles")
-@Tag(name = "Profiles", description = "User profile management")
+@RequestMapping("/api/v1/profiles")
+@Tag(name = "Profiles v1", description = "User profile management - Version 1 API")
 public class ProfileController {
 
     @Autowired
