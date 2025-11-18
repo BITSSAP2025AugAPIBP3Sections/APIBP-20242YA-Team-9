@@ -27,8 +27,8 @@ import java.util.Map;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/api/auth")
-@Tag(name = "Authentication", description = "User authentication and registration endpoints")
+@RequestMapping("/api/v1/auth")
+@Tag(name = "Authentication v1", description = "User authentication and registration endpoints - Version 1 API")
 public class AuthController {
 
     @Autowired private UserRepository userRepo;

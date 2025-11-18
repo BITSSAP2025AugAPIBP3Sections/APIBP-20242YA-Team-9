@@ -27,9 +27,9 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/admin")
+@RequestMapping("/api/v1/admin")
 @PreAuthorize("hasAuthority('ROLE_ADMIN')")  // Entire controller is admin-only
-@Tag(name = "Admin", description = "Administrative operations (Admin role required)")
+@Tag(name = "Admin v1", description = "Administrative operations (Admin role required) - Version 1")
 @SecurityRequirement(name = "Bearer Authentication")
 public class AdminController {
 

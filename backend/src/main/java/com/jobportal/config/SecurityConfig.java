@@ -60,32 +60,32 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        logger.debug("Configuring security filter chain");
+        logger.debug("Configuring security filter chain for API v1");
         http
                 .csrf(csrf -> csrf.disable())
                 .cors(withDefaults())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> {
-                    auth.requestMatchers("/api/auth/**").permitAll()
-                            .requestMatchers("/api/jobs").permitAll()
-                            .requestMatchers("/api/jobs/").permitAll()
-                            .requestMatchers("/api/jobs/{id}").permitAll()
-                            .requestMatchers("/api/profiles/{userId}").permitAll()
+                    auth.requestMatchers("/api/v1/auth/**").permitAll()
+                            .requestMatchers("/api/v1/jobs").permitAll()
+                            .requestMatchers("/api/v1/jobs/").permitAll()
+                            .requestMatchers("/api/v1/jobs/{id}").permitAll()
+                            .requestMatchers("/api/v1/profiles/{userId}").permitAll()
                             .requestMatchers("/graphql").permitAll()
                             .requestMatchers("/graphiql/**").permitAll()
                             .requestMatchers("/graphql/**").permitAll()
                             .requestMatchers("/error").permitAll()  // Allow error handling endpoint
-                            .requestMatchers("/api/jobs/{id}/status").hasAuthority("ROLE_COMPANY")
-                            .requestMatchers("/api/admin/**").hasAuthority("ROLE_ADMIN")
-                            .requestMatchers("/api/applicant/**").hasAuthority("ROLE_APPLICANT")
-                            .requestMatchers("/api/company/**").hasAuthority("ROLE_COMPANY")
+                            .requestMatchers("/api/v1/jobs/{id}/status").hasAuthority("ROLE_COMPANY")
+                            .requestMatchers("/api/v1/admin/**").hasAuthority("ROLE_ADMIN")
+                            .requestMatchers("/api/v1/applicant/**").hasAuthority("ROLE_APPLICANT")
+                            .requestMatchers("/api/v1/company/**").hasAuthority("ROLE_COMPANY")
                             .requestMatchers("/swagger-ui/**").permitAll()
                             .requestMatchers("/swagger-ui.html").permitAll()
                             .requestMatchers("/v3/api-docs/**").permitAll()
                             .requestMatchers("/api-docs/**").permitAll()
                             .requestMatchers("/webjars/**").permitAll()
                             .anyRequest().authenticated();
-                    logger.debug("Security paths configured");
+                    logger.debug("Security paths configured for API v1");
                 })
                 .exceptionHandling(exceptions -> exceptions
                         .accessDeniedHandler(customAccessDeniedHandler)
@@ -93,7 +93,7 @@ public class SecurityConfig {
                 .authenticationProvider(authenticationProvider())
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
-        logger.debug("Security filter chain configuration completed");
+        logger.debug("Security filter chain configuration completed for API v1");
         return http.build();
     }
     @Bean
