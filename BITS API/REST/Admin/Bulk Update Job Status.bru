@@ -1,0 +1,45 @@
+meta {
+  name: Bulk Update Job Status
+  type: http
+  seq: 12
+}
+
+post {
+  url: {{baseUrl}}/api/admin/jobs/bulk-status
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{adminAuthToken}}
+}
+
+body:json {
+  {
+    "1": true,
+    "2": false,
+    "3": true
+  }
+}
+
+tests {
+  test("Status is 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+
+  test("Response has success status", function() {
+    expect(res.body.status).to.equal("success");
+  });
+
+  test("Updated jobs array is returned", function() {
+    expect(res.body.data).to.be.an("array");
+    expect(res.body.count).to.be.a("number");
+    expect(res.body.requestedCount).to.be.a("number");
+  });
+
+  test("Response contains required fields", function() {
+    expect(res.body.message).to.equal("Bulk job status update completed successfully");
+    expect(res.body.action).to.equal("bulk_status_update");
+    expect(res.body.timestamp).to.be.a("string");
+  });
+}

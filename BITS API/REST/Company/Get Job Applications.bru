@@ -1,0 +1,30 @@
+meta {
+  name: Get Job Applications
+  type: http
+  seq: 6
+}
+
+get {
+  url: {{baseUrl}}/api/jobs/1/applications
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{authToken}}
+}
+
+tests {
+  test("Status is 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+  
+  test("Response has success status", function() {
+    expect(res.body.status).to.equal("success");
+  });
+  
+  test("Applications data is returned", function() {
+    expect(res.body.data).to.be.an("array");
+    expect(res.body.count).to.be.a("number");
+  });
+}

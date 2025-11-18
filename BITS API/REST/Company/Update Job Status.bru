@@ -1,0 +1,33 @@
+meta {
+  name: Update Job Status
+  type: http
+  seq: 4
+}
+
+put {
+  url: {{baseUrl}}/api/jobs/1/status?active=true
+  body: none
+  auth: bearer
+}
+
+params:query {
+  active: true
+}
+
+auth:bearer {
+  token: {{authToken}}
+}
+
+tests {
+  test("Status is 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+  
+  test("Response has success status", function() {
+    expect(res.body.status).to.equal("success");
+  });
+  
+  test("Job status updated successfully", function() {
+    expect(res.body.message).to.equal("Job status updated successfully");
+  });
+}

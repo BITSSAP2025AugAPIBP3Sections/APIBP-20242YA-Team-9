@@ -1,0 +1,41 @@
+meta {
+  name: Get All Applications
+  type: http
+  seq: 8
+}
+
+get {
+  url: {{baseUrl}}/api/admin/applications?status={{status}}&includeArchived={{includeArchived}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{adminAuthToken}}
+}
+
+vars {
+  status: PENDING
+  includeArchived: false
+}
+
+tests {
+  test("Status is 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+
+  test("Response has success status", function() {
+    expect(res.body.status).to.equal("success");
+  });
+
+  test("Applications array is returned", function() {
+    expect(res.body.data).to.be.an("array");
+    expect(res.body.count).to.be.a("number");
+  });
+
+  test("Response contains required fields", function() {
+    expect(res.body.message).to.equal("Applications retrieved successfully");
+    expect(res.body.filters).to.be.an("object");
+    expect(res.body.timestamp).to.be.a("string");
+  });
+}

@@ -1,0 +1,25 @@
+meta {
+  name: Update Job Status
+  type: http
+  seq: 5
+}
+
+post {
+  url: http://localhost:8080/graphql
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{jwt_token}}
+}
+
+body:json {
+  {
+    "query": "mutation UpdateJobStatus($id: ID!, $active: Boolean!) { updateJobStatus(id: $id, active: $active) { id title description company { id name bio } location salaryRange postedAt requirements responsibilities applicationsCount active } }",
+    "variables": {
+      "id": "1",
+      "active": false
+    }
+  }
+}

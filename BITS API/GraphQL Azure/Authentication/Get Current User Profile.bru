@@ -1,0 +1,21 @@
+meta {
+  name: Get Current User Profile
+  type: http
+  seq: 3
+}
+
+post {
+  url: https://job-portal-bwc9haethua7h0gw.malaysiawest-01.azurewebsites.net/graphql
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{jwt_token}}
+}
+
+body:json {
+  {
+    "query": "query GetCurrentUserProfile { me { success message id name email role createdAt active bio } }"
+  }
+}

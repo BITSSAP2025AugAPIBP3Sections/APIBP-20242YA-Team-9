@@ -1,0 +1,33 @@
+meta {
+  name: Bulk Update Job Status
+  type: http
+  seq: 10
+}
+
+post {
+  url: http://localhost:8080/graphql
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{jwt_token}}
+}
+
+body:json {
+  {
+    "query": "mutation BulkUpdateJobStatus($jobStatusMap: [JobStatusMapInput!]!) { bulkUpdateJobStatus(jobStatusMap: $jobStatusMap) { id title description company { id name } location salaryRange active } }",
+    "variables": {
+      "jobStatusMap": [
+        {
+          "jobId": "1",
+          "active": false
+        },
+        {
+          "jobId": "2",
+          "active": true
+        }
+      ]
+    }
+  }
+}

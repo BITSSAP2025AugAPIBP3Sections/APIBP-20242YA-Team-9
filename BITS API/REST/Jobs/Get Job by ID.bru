@@ -1,0 +1,50 @@
+meta {
+  name: Get Job by ID
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/api/jobs/1
+  body: none
+  auth: none
+}
+
+tests {
+  test("Status is 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+
+  test("Response has success status", function() {
+    expect(res.body.status).to.equal("success");
+  });
+
+  test("Job data is returned", function() {
+    expect(res.body.data).to.be.an("object");
+  });
+
+  test("Job has all required fields", function() {
+    const job = res.body.data;
+    expect(job.id).to.be.a("string");
+    expect(job.title).to.be.a("string");
+    expect(job.company).to.be.an("object");
+    expect(job.company.name).to.be.a("string");
+    expect(job.company.bio).to.be.a("string");
+    expect(job.location).to.be.a("string");
+    expect(job.salaryRange).to.be.a("string");
+    expect(job.description).to.be.a("string");
+    expect(job.requirements).to.be.a("string");
+    expect(job.responsibilities).to.be.a("string");
+    expect(job.applicationsCount).to.be.a("number");
+  });
+
+  test("Job ID matches request", function() {
+    expect(res.body.jobId).to.equal(1);
+  });
+
+  test("Posted date is in correct format", function() {
+    if (res.body.data.postedAt) {
+      expect(res.body.data.postedAt).to.match(/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z/);
+    }
+  });
+}
