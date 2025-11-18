@@ -1,0 +1,38 @@
+meta {
+  name: Register User
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/api/auth/register
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "name": "John Doe",
+    "email": "john.doe@example.com",
+    "password": "password123",
+    "role": "APPLICANT"
+  }
+}
+
+vars:post-response {
+  userId: res.body.data.userId
+}
+
+tests {
+  test("Status is 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+
+  test("Response has success status", function() {
+    expect(res.body.status).to.equal("success");
+  });
+
+  test("User ID is returned", function() {
+    expect(res.body.data.userId).to.be.a("number");
+  });
+}

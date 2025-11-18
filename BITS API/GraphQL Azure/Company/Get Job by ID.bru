@@ -1,0 +1,24 @@
+meta {
+  name: Get Job by ID
+  type: http
+  seq: 8
+}
+
+post {
+  url: http://localhost:8080/graphql
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{jwt_token}}
+}
+
+body:json {
+  {
+    "query": "query GetJobById($id: ID!) { getJobById(id: $id) { id title description company { id name email bio } location salaryRange postedAt requirements responsibilities applicationsCount active } }",
+    "variables": {
+      "id": "1"
+    }
+  }
+}

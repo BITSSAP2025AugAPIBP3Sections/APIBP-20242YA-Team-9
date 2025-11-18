@@ -1,0 +1,30 @@
+meta {
+  name: Login User
+  type: http
+  seq: 2
+}
+
+post {
+  url: https://job-portal-bwc9haethua7h0gw.malaysiawest-01.azurewebsites.net/graphql
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "query": "mutation LoginUser($input: LoginInput!) { login(input: $input) { success message token user { id name email role createdAt active bio } } }",
+    "variables": {
+      "input": {
+        "email": "john@example.com",
+        "password": "password123"
+      }
+    }
+  }
+}
+
+script:post-response {
+  // Store the JWT token for authenticated requests
+  if (res.body.data && res.body.data.login && res.body.data.login.token) {
+    bru.setVar("jwt_token", res.body.data.login.token);
+  }
+}

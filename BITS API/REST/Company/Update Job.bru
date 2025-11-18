@@ -1,0 +1,40 @@
+meta {
+  name: Update Job
+  type: http
+  seq: 3
+}
+
+put {
+  url: {{baseUrl}}/api/jobs/1
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{companyAuthToken}}
+}
+
+body:json {
+  {
+    "title": "Senior Software Developer - Updated",
+    "description": "We are looking for a senior software developer with experience in Java and Spring Boot. Updated requirements.",
+    "location": "San Francisco, CA",
+    "salaryRange": "90000-130000",
+    "requirements": "5+ years of Java experience, Spring Boot, REST APIs, Microservices",
+    "responsibilities": "Develop and maintain backend services, collaborate with frontend team, mentor junior developers"
+  }
+}
+
+tests {
+  test("Status is 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+  
+  test("Response has success status", function() {
+    expect(res.body.status).to.equal("success");
+  });
+  
+  test("Job updated successfully", function() {
+    expect(res.body.message).to.equal("Job updated successfully");
+  });
+}

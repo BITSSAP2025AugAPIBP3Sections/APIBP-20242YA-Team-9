@@ -1,0 +1,29 @@
+meta {
+  name: Get Resume
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{baseUrl}}/api/applicant/resume/{{userId}}/a8623057-e434-4794-be10-a70448e6c633.pdf
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{authToken}}
+}
+
+tests {
+  test("Status is 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+  
+  test("Content-Type header is set", function() {
+    expect(res.getHeader("Content-Type")).to.match(/application\/(pdf|msword|octet-stream)/);
+  });
+  
+  test("Content-Disposition header is set", function() {
+    expect(res.getHeader("Content-Disposition")).to.match(/attachment; filename=/);
+  });
+}
