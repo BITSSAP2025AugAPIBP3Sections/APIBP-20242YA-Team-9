@@ -1,0 +1,43 @@
+meta {
+  name: Login User
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/api/auth/login
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "email": "tcs@example.com",
+    "password": "password123"
+  }
+}
+
+vars:post-response {
+  authToken: res.body.data.token
+  userId: res.body.data.user.id
+  userRole: res.body.data.user.role
+}
+
+tests {
+  test("Status is 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+  
+  test("Response has success status", function() {
+    expect(res.body.status).to.equal("success");
+  });
+  
+  test("Token is returned", function() {
+    expect(res.body.data.token).to.be.a("string");
+  });
+  
+  test("User data is returned", function() {
+    expect(res.body.data.user).to.be.an("object");
+    expect(res.body.data.user.email).to.equal("john.doe@example.com");
+  });
+}

@@ -1,0 +1,36 @@
+meta {
+  name: Delete Application
+  type: http
+  seq: 10
+}
+
+delete {
+  url: {{baseUrl}}/api/admin/applications/{{applicationId}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{adminAuthToken}}
+}
+
+vars {
+  applicationId: 1
+}
+
+tests {
+  test("Status is 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+
+  test("Response has success status", function() {
+    expect(res.body.status).to.equal("success");
+  });
+
+  test("Response contains required fields", function() {
+    expect(res.body.message).to.equal("Application deleted successfully");
+    expect(res.body.applicationId).to.be.a("number");
+    expect(res.body.action).to.equal("delete");
+    expect(res.body.timestamp).to.be.a("string");
+  });
+}

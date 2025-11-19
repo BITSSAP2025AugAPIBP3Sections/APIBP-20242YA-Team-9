@@ -1,0 +1,25 @@
+meta {
+  name: Apply to Job
+  type: http
+  seq: 5
+}
+
+post {
+  url: https://job-portal-bwc9haethua7h0gw.malaysiawest-01.azurewebsites.net/graphql
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{jwt_token}}
+}
+
+body:json {
+  {
+    "query": "mutation ApplyToJob($jobId: ID!, $resumeUrl: String) { applyToJob(jobId: $jobId, resumeUrl: $resumeUrl) { message } }",
+    "variables": {
+      "jobId": "1",
+      "resumeUrl": "/api/applicant/resume/2/061c525a-5478-42d5-9023-bddf03f073e4.pdf"
+    }
+  }
+}

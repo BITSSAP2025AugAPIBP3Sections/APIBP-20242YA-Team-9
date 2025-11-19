@@ -1,0 +1,24 @@
+meta {
+  name: Get Job Applications
+  type: http
+  seq: 6
+}
+
+post {
+  url: http://localhost:8080/graphql
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{jwt_token}}
+}
+
+body:json {
+  {
+    "query": "query GetJobApplications($jobId: ID!) { getJobApplications(jobId: $jobId) { id job { id title } applicant { id name email } status appliedAt resumeUrl } }",
+    "variables": {
+      "jobId": "1"
+    }
+  }
+}

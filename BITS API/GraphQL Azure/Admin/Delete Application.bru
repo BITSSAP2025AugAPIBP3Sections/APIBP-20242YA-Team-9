@@ -1,0 +1,24 @@
+meta {
+  name: Delete Application
+  type: http
+  seq: 8
+}
+
+post {
+  url: http://localhost:8080/graphql
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{jwt_token}}
+}
+
+body:json {
+  {
+    "query": "mutation DeleteApplication($id: ID!) { deleteApplication(id: $id) { message } }",
+    "variables": {
+      "id": "1"
+    }
+  }
+}

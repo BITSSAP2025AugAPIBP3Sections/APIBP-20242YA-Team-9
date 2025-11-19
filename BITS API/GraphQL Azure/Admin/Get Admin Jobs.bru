@@ -1,0 +1,25 @@
+meta {
+  name: Get Admin Jobs
+  type: http
+  seq: 3
+}
+
+post {
+  url: https://job-portal-bwc9haethua7h0gw.malaysiawest-01.azurewebsites.net/graphql
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{jwt_token}}
+}
+
+body:json {
+  {
+    "query": "query GetAdminJobs($active: Boolean, $includeExpired: Boolean) { getAdminJobs(active: $active, includeExpired: $includeExpired) { id title description company { id name email bio } location salaryRange postedAt requirements responsibilities active } }",
+    "variables": {
+      "active": null,
+      "includeExpired": false
+    }
+  }
+}

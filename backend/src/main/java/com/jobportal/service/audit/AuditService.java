@@ -32,13 +32,13 @@ public class AuditService {
         return logOperation(entityName, entityId, operation, null, null, null);
     }
 
-    public AuditLog logOperation(String entityName, String entityId, AuditOperation operation, 
-                                Object oldValues, Object newValues, List<String> changedFields) {
+    public AuditLog logOperation(String entityName, String entityId, AuditOperation operation,
+                                 Object oldValues, Object newValues, List<String> changedFields) {
         AuditLog auditLog = new AuditLog(entityName, entityId, operation);
-        
+
         // Set user information
         setUserInformation(auditLog);
-        
+
         // Set old and new values
         if (oldValues != null) {
             try {
@@ -47,7 +47,7 @@ public class AuditService {
                 auditLog.setOldValues("Error serializing old values: " + e.getMessage());
             }
         }
-        
+
         if (newValues != null) {
             try {
                 auditLog.setNewValues(objectMapper.writeValueAsString(newValues));
@@ -55,43 +55,43 @@ public class AuditService {
                 auditLog.setNewValues("Error serializing new values: " + e.getMessage());
             }
         }
-        
+
         if (changedFields != null && !changedFields.isEmpty()) {
             auditLog.setChangedFields(String.join(",", changedFields));
         }
-        
+
         return auditLogRepository.save(auditLog);
     }
 
     public AuditLog logOperationWithRequest(String entityName, String entityId, AuditOperation operation,
-                                           HttpServletRequest request) {
+                                            HttpServletRequest request) {
         AuditLog auditLog = logOperation(entityName, entityId, operation);
-        
+
         if (request != null) {
             auditLog.setIpAddress(getClientIpAddress(request));
             auditLog.setUserAgent(request.getHeader("User-Agent"));
             auditLog.setSessionId(request.getSession().getId());
         }
-        
+
         return auditLogRepository.save(auditLog);
     }
 
-    public AuditLog logFailedOperation(String entityName, String entityId, AuditOperation operation, 
-                                      String errorMessage) {
+    public AuditLog logFailedOperation(String entityName, String entityId, AuditOperation operation,
+                                       String errorMessage) {
         AuditLog auditLog = new AuditLog(entityName, entityId, operation);
         setUserInformation(auditLog);
         auditLog.setSuccess(false);
         auditLog.setErrorMessage(errorMessage);
-        
+
         return auditLogRepository.save(auditLog);
     }
 
     private void setUserInformation(AuditLog auditLog) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        
+
         if (authentication != null && authentication.isAuthenticated()) {
             Object principal = authentication.getPrincipal();
-            
+
             if (principal instanceof CustomUserDetails) {
                 CustomUserDetails userDetails = (CustomUserDetails) principal;
                 auditLog.setUserEmail(userDetails.getUser().getEmail());
@@ -116,6 +116,14 @@ public class AuditService {
     // Query methods
     public List<AuditLog> getAuditLogsForEntity(String entityName, String entityId) {
         return auditLogRepository.findByEntityNameAndEntityId(entityName, entityId);
+    }
+
+    public Page<AuditLog> getAuditLogs(Pageable pageable) {
+        return auditLogRepository.findAll(pageable);
+    }
+
+    public Page<AuditLog> getAuditLogsOrderedByTimestamp(Pageable pageable) {
+        return auditLogRepository.findAllOrderByTimestampDesc(pageable);
     }
 
     public List<AuditLog> getAuditLogsForUser(String userEmail) {
@@ -145,4 +153,115 @@ public class AuditService {
     public Long getOperationCountSince(AuditOperation operation, LocalDateTime since) {
         return auditLogRepository.countByOperationSince(operation, since);
     }
+
+    public Page<AuditLog> getAuditLogsByUserAndEntity(String userEmail, String entityName, Pageable pageable) {
+        return auditLogRepository.findByUserEmailAndEntityNameOrderByTimestampDesc(userEmail, entityName, pageable);
+    }
+
+    public Long getSuccessfulOperationCount() {
+        return auditLogRepository.countBySuccessStatusTrue();
+    }
+
+    public Long getFailedOperationCount() {
+        return auditLogRepository.countBySuccessStatusFalse();
+    }
+
+    public Page<AuditLog> findAllExceptAuditControllerIgnoreCaseOrderByTimestampDesc(Pageable pageable) {
+        return auditLogRepository.findAllExceptAuditControllerIgnoreCaseOrderByTimestampDesc(pageable);
+    }
+
+    public Page<AuditLog> getAuditLogsByDateRangeOrderedByTimestampDesc(LocalDateTime startDate,
+                                                                        LocalDateTime endDate,
+                                                                        Pageable pageable) {
+        return auditLogRepository.findByTimestampBetweenOrderByTimestampDesc(startDate, endDate, pageable);
+    }
+
+    public Page<AuditLog> getAuditLogsByUserAndEntityAndDateRangeOrderedByTimestampDesc(
+            String userEmail,
+            String entityName,
+            LocalDateTime startDate,
+            LocalDateTime endDate,
+            Pageable pageable) {
+        return auditLogRepository.findByUserEmailAndEntityNameAndTimestampBetweenOrderByTimestampDesc(
+                userEmail, entityName, startDate, endDate, pageable);
+    }
+
+    public Page<AuditLog> getAuditLogsByEntityAndDateRangeOrderedByTimestampDesc(
+            String entityName,
+            LocalDateTime startDate,
+            LocalDateTime endDate,
+            Pageable pageable) {
+        return auditLogRepository.findByEntityNameAndTimestampBetweenOrderByTimestampDesc(
+                entityName, startDate, endDate, pageable);
+    }
+
+    public Page<AuditLog> findByUserEmailAndTimestampBetweenOrderByTimestampDesc(
+            String userEmail,
+            LocalDateTime startDate,
+            LocalDateTime endDate,
+            Pageable pageable) {
+        return auditLogRepository.findByUserEmailAndTimestampBetweenOrderByTimestampDesc(
+                userEmail, startDate, endDate, pageable);
+    }
+
+    public Page<AuditLog> findBySuccessStatusOrderByTimestampDesc(
+            boolean success,
+            Pageable pageable) {
+        return auditLogRepository.findBySuccessOrderByTimestampDesc(success, pageable);
+    }
+
+    public Page<AuditLog> getAuditLogsByUserAndEntityAndDateRangeAndSuccessOrderedByTimestampDesc(
+            String userEmail,
+            String entityName,
+            LocalDateTime startDate,
+            LocalDateTime endDate,
+            boolean success,
+            Pageable pageable) {
+        return auditLogRepository.findByUserEmailAndEntityNameAndTimestampBetweenAndSuccessOrderByTimestampDesc(
+                userEmail, entityName, startDate, endDate, success, pageable);
+    }
+
+    public Page<AuditLog> getAuditLogsByEntityAndDateRangeAndSuccessOrderedByTimestampDesc(
+            String entityName,
+            LocalDateTime startDate,
+            LocalDateTime endDate,
+            boolean success,
+            Pageable pageable) {
+        return auditLogRepository.findByEntityNameAndTimestampBetweenAndSuccessOrderByTimestampDesc(
+                entityName, startDate, endDate, success, pageable);
+    }
+
+    public Page<AuditLog> getAuditLogsByUserAndDateRangeAndSuccessOrderedByTimestampDesc(
+            String userEmail,
+            LocalDateTime startDate,
+            LocalDateTime endDate,
+            boolean success,
+            Pageable pageable) {
+        return auditLogRepository.findByUserEmailAndTimestampBetweenAndSuccessOrderByTimestampDesc(
+                userEmail, startDate, endDate, success, pageable);
+    }
+
+    public Page<AuditLog> getAuditLogsByDateRangeAndSuccessOrderedByTimestampDesc(
+            LocalDateTime startDate,
+            LocalDateTime endDate,
+            boolean success,
+            Pageable pageable) {
+        return auditLogRepository.findByTimestampBetweenAndSuccessOrderByTimestampDesc(
+                startDate, endDate, success, pageable);
+    }
+
+    public Page<AuditLog> getAuditLogsByUserEmailAndEntityNameAndSuccessOrderByTimestampDesc(String userEmail, String entityName, Boolean success, Pageable pageable){
+        return auditLogRepository.findByUserEmailAndEntityNameAndSuccessOrderByTimestampDesc(userEmail, entityName, success, pageable);
+    }
+
+    public Page<AuditLog> getAuditLogsByUserEmailAndSuccessOrderByTimestampDesc(
+            String userEmail, Boolean success, Pageable pageable) {
+        return auditLogRepository.findByUserEmailAndSuccessOrderByTimestampDesc(userEmail, success, pageable);
+    }
+
+    public Page<AuditLog> getAuditLogsByEntityNameAndSuccessOrderByTimestampDesc(
+            String entityName, Boolean success, Pageable pageable) {
+        return auditLogRepository.findByEntityNameAndSuccessOrderByTimestampDesc(entityName, success, pageable);
+    }
+
 }

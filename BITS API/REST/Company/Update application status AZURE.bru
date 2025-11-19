@@ -1,0 +1,25 @@
+meta {
+  name: Update application status AZURE
+  type: http
+  seq: 8
+}
+
+put {
+  url: https://job-portal-bwc9haethua7h0gw.malaysiawest-01.azurewebsites.net/api/jobs/applications/2
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJ0Y3NAZXhhbXBsZS5jb20iLCJpZCI6NCwicm9sZSI6IlJPTEVfQ09NUEFOWSIsImlhdCI6MTc2MzM1NTA2NCwiZXhwIjoxNzYzNDQxNDY0fQ.yuB8JLR_Qy72rwmLHY4yHkXuIsX2FNhDC37G2HczRa-GWVDVF24YrBKCKczfCrnGb7U3yr7d6HyRkjo9LKPJbw
+}
+
+body:json {
+  {
+    "status": "REJECTED"
+  }
+}
+
+settings {
+  encodeUrl: true
+}

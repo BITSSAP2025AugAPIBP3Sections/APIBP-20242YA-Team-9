@@ -1,0 +1,31 @@
+meta {
+  name: Create Job
+  type: http
+  seq: 1
+}
+
+post {
+  url: https://job-portal-bwc9haethua7h0gw.malaysiawest-01.azurewebsites.net/graphql
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{jwt_token}}
+}
+
+body:json {
+  {
+    "query": "mutation CreateJob($input: JobInput!) { createJob(input: $input) { id title description company { id name bio } location salaryRange postedAt requirements responsibilities applicationsCount active } }",
+    "variables": {
+      "input": {
+        "title": "Senior GraphQL Developer",
+        "description": "We are looking for an experienced GraphQL developer to join our team.",
+        "location": "Remote",
+        "salaryRange": "90000-120000",
+        "requirements": ["GraphQL", "Java", "Spring Boot", "React"],
+        "responsibilities": ["Develop GraphQL APIs", "Collaborate with frontend team", "Code reviews"]
+      }
+    }
+  }
+}

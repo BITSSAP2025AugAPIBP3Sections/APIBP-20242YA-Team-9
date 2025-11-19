@@ -1,0 +1,29 @@
+meta {
+  name: Delete Job
+  type: http
+  seq: 5
+}
+
+delete {
+  url: {{baseUrl}}/api/jobs/1
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{authToken}}
+}
+
+tests {
+  test("Status is 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+  
+  test("Response has success status", function() {
+    expect(res.body.status).to.equal("success");
+  });
+  
+  test("Job deactivated successfully", function() {
+    expect(res.body.message).to.contain("successfully deactivated");
+  });
+}
