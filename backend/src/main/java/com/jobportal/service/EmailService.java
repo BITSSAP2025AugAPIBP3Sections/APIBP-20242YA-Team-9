@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.MailException;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import com.jobportal.entity.Application;
@@ -115,6 +116,19 @@ public class EmailService {
 
         if (sendToCompany && companyEmail != null && !companySubject.isEmpty()) {
             sendEmail(companyEmail, companySubject, companyBody);
+        }
+    }
+
+    @Async("emailTaskExecutor")
+    public void sendApplicationStatusUpdateEmailsAsync(Application application) {
+        System.out.println("Sending application emails asynchronously for job: " + application.getJob().getTitle() + 
+                          " on thread: " + Thread.currentThread().getName());
+        try {
+            sendApplicationStatusUpdateEmails(application);
+            System.out.println("Application emails sent successfully for job: " + application.getJob().getTitle());
+        } catch (Exception e) {
+            System.err.println("Error sending application emails for job: " + application.getJob().getTitle() + 
+                             " - " + e.getMessage());
         }
     }
 

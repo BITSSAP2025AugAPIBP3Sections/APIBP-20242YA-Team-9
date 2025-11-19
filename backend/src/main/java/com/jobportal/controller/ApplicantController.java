@@ -44,7 +44,8 @@ import java.util.Map;
 @SecurityRequirement(name = "Bearer Authentication")
 public class ApplicantController {
 
-    @Value("${app.upload.dir:${user.home}/FSAD-job-portal/Job-portal/frontend/public/uploads/resumes}")
+    
+    @Value("${app.upload.dir}")
     private String uploadDir;
 
     @Autowired
@@ -313,6 +314,7 @@ public class ApplicantController {
             @Parameter(description = "Job ID to apply for", required = true) @PathVariable Long jobId,
             @Parameter(description = "Optional resume URL to attach to application") @RequestParam(required = false) String resumeUrl) {
         try {
+            System.out.println("User " + userDetails.getUser().getId() + " is applying to job " + jobId + " with resumeUrl: " + resumeUrl);
             Application application = applicantService.applyToJob(
                 userDetails.getUser().getId(), jobId, resumeUrl);
                 

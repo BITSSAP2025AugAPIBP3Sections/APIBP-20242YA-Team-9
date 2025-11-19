@@ -26,7 +26,7 @@ import java.util.UUID;
 @Service
 public class ApplicantService {
 
-    @Value("${app.upload.dir:${user.home}/FSAD-job-portal/Job-portal/frontend/public/uploads/resumes}")
+    @Value("${app.upload.dir}")
     private String uploadDir;
 
     @Autowired
@@ -84,7 +84,7 @@ public class ApplicantService {
             Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
 
             // Return the relative path that can be used to retrieve the file
-            return "/api/applicant/resume/" + userId + "/" + newFilename;
+            return "/api/v1/applicant/resume/" + userId + "/" + newFilename;
         } catch (IOException e) {
             throw new RuntimeException("Failed to store file " + originalFilename, e);
         }
@@ -127,7 +127,7 @@ public class ApplicantService {
         application.setStatus(ApplicationStatus.PENDING);
         Application savedApplication = applicationRepository.save(application);
 
-        emailService.sendApplicationStatusUpdateEmails(savedApplication);
+        emailService.sendApplicationStatusUpdateEmailsAsync(savedApplication);
 
         return savedApplication;
 

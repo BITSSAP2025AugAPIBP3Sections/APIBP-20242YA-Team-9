@@ -1,0 +1,5 @@
+*.log
+*.bru
+postman/
+bruno/
+.idea/
