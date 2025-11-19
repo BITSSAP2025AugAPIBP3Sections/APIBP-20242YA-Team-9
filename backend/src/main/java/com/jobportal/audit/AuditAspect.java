@@ -9,6 +9,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
+import com.jobportal.service.audit.AuditService;
+import com.jobportal.entity.audit.AuditOperation;
 
 import com.jobportal.security.CustomUserDetails;
 
@@ -22,6 +24,9 @@ public class AuditAspect {
 
     @Autowired
     private AuditLogger auditLogger;
+
+    @Autowired
+    private AuditService auditService;
 
     // Audit all controller methods
     @Around("execution(* com.jobportal.controller.*.*(..))")
@@ -76,6 +81,12 @@ public class AuditAspect {
             callDetails
         );
 
+        try {
+            auditService.logOperationWithRequest(className, methodName, AuditOperation.READ, request);
+        } catch (Exception e) {
+            System.err.println("Failed to save audit log to database: " + e.getMessage());
+        }
+
         Object result = null;
         int responseCode = 200;
         
@@ -114,6 +125,11 @@ public class AuditAspect {
         
         if ("login".equals(methodName)) {
             auditLogger.logAuthenticationAction("LOGIN_SUCCESS", email, ipAddress, true, "User login successful");
+            try {
+                auditService.logOperationWithRequest("User", email != null ? email : "unknown", AuditOperation.LOGIN, getCurrentRequest());
+            } catch (Exception e) {
+                System.err.println("Failed to save login audit to database: " + e.getMessage());
+            }
         } else if ("register".equals(methodName)) {
             auditLogger.logAuthenticationAction("REGISTRATION_SUCCESS", email, ipAddress, true, "User registration successful");
         }
@@ -294,6 +310,15 @@ public class AuditAspect {
             }
         }
         return "Unknown";
+    }
+
+    private HttpServletRequest getCurrentRequest() {
+        try {
+            ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+            return attributes != null ? attributes.getRequest() : null;
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     private String getArgumentsAsString(Object[] args) {

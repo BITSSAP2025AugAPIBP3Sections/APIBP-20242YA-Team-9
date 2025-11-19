@@ -71,6 +71,7 @@ public class SecurityConfig {
                             .requestMatchers("/api/v1/jobs/").permitAll()
                             .requestMatchers("/api/v1/jobs/{id}").permitAll()
                             .requestMatchers("/api/v1/profiles/{userId}").permitAll()
+                            .requestMatchers("/api/v1/admin/audit/**").permitAll()
                             .requestMatchers("/graphql").permitAll()
                             .requestMatchers("/graphiql/**").permitAll()
                             .requestMatchers("/graphql/**").permitAll()
