@@ -171,7 +171,8 @@ public class JobService {
                     newStatus == ApplicationStatus.REJECTED) {
                 // Make sure emailService is not null
                 if (emailService != null) {
-                    emailService.sendApplicationStatusUpdateEmails(savedApplication);
+                    //send mails to candidate on status change
+                    // emailService.sendApplicationStatusUpdateEmails(savedApplication);
                     logger.info("Notification email sent for application {}", applicationId);
                 } else {
                     logger.warn("EmailService is null. Cannot send notification email for application {}", applicationId);
