@@ -121,7 +121,7 @@ public class AuthController {
                     req.getRole()
             );
             User savedUser = userRepo.save(user);
-            emailService.sendRegistrationEmailAsync(user.getEmail(), user.getName());
+//        emailService.sendRegistrationEmail(user.getEmail(), user.getName());
             
             Map<String, Object> response = Map.of(
                 "status", "success",

@@ -5,7 +5,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.MailException;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import com.jobportal.entity.Application;
@@ -116,31 +115,6 @@ public class EmailService {
 
         if (sendToCompany && companyEmail != null && !companySubject.isEmpty()) {
             sendEmail(companyEmail, companySubject, companyBody);
-        }
-    }
-
-    @Async("emailTaskExecutor")
-    public void sendApplicationStatusUpdateEmailsAsync(Application application) {
-        System.out.println("Sending application emails asynchronously for job: " + application.getJob().getTitle() + 
-                          " on thread: " + Thread.currentThread().getName());
-        try {
-            sendApplicationStatusUpdateEmails(application);
-            System.out.println("Application emails sent successfully for job: " + application.getJob().getTitle());
-        } catch (Exception e) {
-            System.err.println("Error sending application emails for job: " + application.getJob().getTitle() + 
-                             " - " + e.getMessage());
-        }
-    }
-
-    @Async("emailTaskExecutor")
-    public void sendRegistrationEmailAsync(String toEmail, String userName) {
-        System.out.println("Sending registration email asynchronously to: " + toEmail + 
-                          " on thread: " + Thread.currentThread().getName());
-        try {
-            sendRegistrationEmail(toEmail, userName);
-            System.out.println("Registration email sent successfully to: " + toEmail);
-        } catch (Exception e) {
-            System.err.println("Error sending registration email to: " + toEmail + " - " + e.getMessage());
         }
     }
 
