@@ -132,6 +132,18 @@ public class EmailService {
         }
     }
 
+    @Async("emailTaskExecutor")
+    public void sendRegistrationEmailAsync(String toEmail, String userName) {
+        System.out.println("Sending registration email asynchronously to: " + toEmail + 
+                          " on thread: " + Thread.currentThread().getName());
+        try {
+            sendRegistrationEmail(toEmail, userName);
+            System.out.println("Registration email sent successfully to: " + toEmail);
+        } catch (Exception e) {
+            System.err.println("Error sending registration email to: " + toEmail + " - " + e.getMessage());
+        }
+    }
+
     private void sendEmail(String to, String subject, String text) {
         SimpleMailMessage message = new SimpleMailMessage();
         message.setFrom(fromEmailAddress);
