@@ -233,7 +233,16 @@ public class AuthController {
             
             User user = userOpt.get();
             String token = jwtUtils.generateToken(user.getEmail(), user.getId(), user.getRole());
-            
+
+            if (!user.isActive()) {
+                Map<String, Object> response = Map.of(
+                        "status", "error",
+                        "message", "Authentication failed: Account is deactivated",
+                        "email", req.getEmail(),
+                        "timestamp", java.time.Instant.now().toString()
+                );
+                return ResponseEntity.status(401).body(response);
+            }
             // Calculate expiration time
             long currentTime = System.currentTimeMillis();
             long expirationTime = currentTime + jwtUtils.getExpirationTimeInMs();

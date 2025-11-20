@@ -36,11 +36,21 @@ export default function LoginPage() {
       router.push("/dashboard")
     } catch (error) {
       console.log("Login error:", error);
-      toast({
-        title: error?.message,
-        description: "Invalid email or password. Please try again.",
-        variant: "destructive",
-      })
+      
+      // Handle deactivated user specifically
+      if (error?.message && error.message.includes("deactivated")) {
+        toast({
+          title: "Account Deactivated",
+          description: "Your account has been deactivated. Please contact support for assistance.",
+          variant: "destructive",
+        })
+      } else {
+        toast({
+          title: error?.message || "Login Failed",
+          description: "Invalid email or password. Please try again.",
+          variant: "destructive",
+        })
+      }
     } finally {
       setIsLoading(false)
     }
