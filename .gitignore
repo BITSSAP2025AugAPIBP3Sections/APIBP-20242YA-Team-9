@@ -3,3 +3,6 @@
 postman/
 bruno/
 .idea/
+public/uploads/resumes/
+.DS_Store
+.vscode/

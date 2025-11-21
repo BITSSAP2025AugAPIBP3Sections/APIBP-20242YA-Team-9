@@ -3,6 +3,8 @@ package com.jobportal.entity;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.jobportal.enums.Role;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
@@ -25,6 +27,8 @@ public class User {
     @Column(nullable = false, unique = true)
     private String email;
 
+    // Security: Password field is excluded from JSON serialization
+    @JsonIgnore
     @Column(nullable = false)
     private String password;     // will store a BCrypt‐hashed password
 
@@ -77,6 +81,7 @@ public class User {
         return password;
     }
 
+    @JsonProperty
     public void setPassword(String password) {
         this.password = password;
     }
@@ -122,10 +127,12 @@ public class User {
     @Column(name = "last_modified_date")
     private LocalDateTime lastModifiedDate;
 
+    @JsonIgnore
     @CreatedBy
     @Column(name = "created_by", updatable = false)
     private String createdBy;
 
+    @JsonIgnore
     @LastModifiedBy
     @Column(name = "last_modified_by")
     private String lastModifiedBy;

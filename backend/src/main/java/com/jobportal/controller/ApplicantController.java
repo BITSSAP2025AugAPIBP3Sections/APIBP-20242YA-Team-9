@@ -13,6 +13,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.jobportal.dto.JobDTO;
 import com.jobportal.entity.Application;
 import com.jobportal.entity.Job;
 import com.jobportal.entity.User;
@@ -274,11 +275,16 @@ public class ApplicantController {
         try {
             List<Job> jobs = applicantService.searchJobs(location, title, salaryRange);
             
+            // Convert to DTOs to exclude sensitive data like passwords
+            List<JobDTO> jobDTOs = jobs.stream()
+                .map(JobDTO::new)
+                .toList();
+            
             Map<String, Object> response = Map.of(
                 "status", "success",
                 "message", "Jobs retrieved successfully",
-                "data", jobs,
-                "count", jobs.size(),
+                "data", jobDTOs,
+                "count", jobDTOs.size(),
                 "filters", Map.of(
                     "location", location != null ? location : "all",
                     "title", title != null ? title : "all",
