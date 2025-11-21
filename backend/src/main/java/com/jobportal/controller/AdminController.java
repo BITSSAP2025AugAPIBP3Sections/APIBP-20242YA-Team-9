@@ -61,6 +61,11 @@ public class AdminController {
             @RequestParam(required = false) String sort) {
         logger.debug("Getting all users with role: {} and includeInactive: {}", role, includeInactive);
         
+        // Convert to DTOs to exclude sensitive data like passwords
+        List<UserDTO> userDTOs = users.stream()
+            .map(UserDTO::new)
+            .toList();
+        
         Map<String, Object> response = new HashMap<>();
         response.put("status", "success");
         response.put("message", "Users retrieved successfully");
