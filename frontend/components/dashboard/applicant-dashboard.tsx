@@ -7,6 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { BriefcaseIcon, CheckCircleIcon, ClockIcon, XCircleIcon } from "lucide-react"
 import Link from "next/link"
 import { api } from "@/lib/api"
+import { useToast } from "@/hooks/use-toast"
 
 export default function ApplicantDashboard() {
   interface Application {
@@ -22,6 +23,8 @@ export default function ApplicantDashboard() {
 
   const [applications, setApplications] = useState<Application[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [withdrawingId, setWithdrawingId] = useState<string | null>(null)
+  const { toast } = useToast()
 
   useEffect(() => {
     const fetchApplications = async () => {
@@ -29,57 +32,45 @@ export default function ApplicantDashboard() {
         // In a real implementation, this would fetch from the API
         const data = await api.getMyApplications();
         setApplications(data.data);
-
-        // Mock data for demonstration
-        // setApplications([
-        //   {
-        //     id: "1",
-        //     job: {
-        //       id: "1",
-        //       title: "Senior Frontend Developer",
-        //       company: { name: "TechCorp Inc." },
-        //     },
-        //     status: "PENDING",
-        //     appliedAt: "2023-05-10T00:00:00Z",
-        //   },
-        //   {
-        //     id: "2",
-        //     job: {
-        //       id: "3",
-        //       title: "UX/UI Designer",
-        //       company: { name: "Creative Solutions" },
-        //     },
-        //     status: "REVIEWING",
-        //     appliedAt: "2023-05-08T00:00:00Z",
-        //   },
-        //   {
-        //     id: "3",
-        //       job: {
-        //       id: "5",
-        //       title: "Product Manager",
-        //       company: { name: "InnovateCo" },
-        //     },
-        //     status: "REJECTED",
-        //     appliedAt: "2023-05-05T00:00:00Z",
-        //   },
-        //   {
-        //     id: "4",
-        //     job: {
-        //       id: "2",
-        //       title: "Backend Engineer",
-        //       company: { name: "DataSystems Ltd." },
-        //     },
-        //     status: "ACCEPTED",
-        //     appliedAt: "2023-05-03T00:00:00Z",
-        //   },
-        // ])
+      } catch (error) {
+        toast({
+          title: "Error",
+          description: "Failed to fetch applications. Please try again.",
+          variant: "destructive"
+        })
       } finally {
         setIsLoading(false)
       }
     }
 
     fetchApplications()
-  }, [])
+  }, [toast])
+
+  const handleWithdrawApplication = async (applicationId: string, jobTitle: string) => {
+    try {
+      setWithdrawingId(applicationId)
+      
+      // Call the withdraw API
+      await api.withdrawApplication(applicationId)
+      
+      // Remove the application from the local state
+      setApplications(prev => prev.filter(app => app.id !== applicationId))
+      
+      toast({
+        title: "Application Withdrawn",
+        description: `Your application for ${jobTitle} has been withdrawn successfully.`,
+        variant: "default"
+      })
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to withdraw application. Please try again.",
+        variant: "destructive"
+      })
+    } finally {
+      setWithdrawingId(null)
+    }
+  }
 
   const getStatusIcon = (status: "PENDING" | "REVIEWING" | "ACCEPTED" | "REJECTED") => {
     switch (status) {
@@ -110,6 +101,13 @@ export default function ApplicantDashboard() {
         return status
     }
   }
+
+  const canWithdraw = (status: "PENDING" | "REVIEWING" | "ACCEPTED" | "REJECTED") => {
+    return status === "PENDING" || status === "REVIEWING"
+  }
+  
+  
+
 
   return (
     <Tabs defaultValue="applications">
@@ -155,16 +153,28 @@ export default function ApplicantDashboard() {
                         Applied on {new Date(application?.appliedAt).toLocaleDateString()}
                       </p>
                     </div>
-                    <div className="flex items-center mt-2 md:mt-0">
-                      <div className="flex items-center gap-1 mr-4">
+                    <div className="flex items-center mt-2 md:mt-0 gap-2">
+                      <div className="flex items-center gap-1">
                         {getStatusIcon(application?.status)}
                         <span className="text-sm font-medium">{getStatusText(application?.status)}</span>
                       </div>
-                      <Link href={`/jobs/${application?.job?.id}`}>
-                        <Button variant="outline" size="sm">
-                          View Job
-                        </Button>
-                      </Link>
+                      <div className="flex gap-2">
+                        <Link href={`/jobs/${application?.job?.id}`}>
+                          <Button variant="outline" size="sm">
+                            View Job
+                          </Button>
+                        </Link>
+                        {canWithdraw(application?.status) && (
+                          <Button 
+                            variant="destructive" 
+                            size="sm"
+                            onClick={() => handleWithdrawApplication(application.id, application.job.title)}
+                            disabled={withdrawingId === application.id}
+                          >
+                            {withdrawingId === application.id ? "Withdrawing..." : "Withdraw"}
+                          </Button>
+                        )}
+                      </div>
                     </div>
                   </div>
                 ))}

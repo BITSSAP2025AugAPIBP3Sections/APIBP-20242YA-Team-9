@@ -170,6 +170,16 @@ async updateApplicationStatus(id: number, status:string) {
     })
     return handleResponse(response)
   },
+  // Add this method to your api object
+async withdrawApplication(applicationId: string) {
+  const response = await fetch(`${API_BASE_URL}/applicant/applications/${applicationId}`, {
+    method: "DELETE",
+    headers: {
+      Authorization: `Bearer ${getToken()}`,
+    },
+  })
+  return handleResponse(response)
+},
 
   async applyForJob(jobId: string, data: { resumeUrl: string }) {
     const response = await fetch(`${API_BASE_URL}/applicant/apply/${jobId}?resumeUrl=${data.resumeUrl}`, {
