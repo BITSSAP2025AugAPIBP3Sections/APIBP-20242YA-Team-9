@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import com.jobportal.dto.UserDTO;
 import com.jobportal.entity.Application;
 import com.jobportal.entity.Job;
 import com.jobportal.entity.User;
@@ -54,11 +55,16 @@ public class AdminController {
         logger.debug("Getting all users with role: {} and includeInactive: {}", role, includeInactive);
         List<User> users = adminService.getAllUsers(role, includeInactive);
         
+        // Convert to DTOs to exclude sensitive data like passwords
+        List<UserDTO> userDTOs = users.stream()
+            .map(UserDTO::new)
+            .toList();
+        
         Map<String, Object> response = new HashMap<>();
         response.put("status", "success");
         response.put("message", "Users retrieved successfully");
-        response.put("data", users);
-        response.put("count", users.size());
+        response.put("data", userDTOs);
+        response.put("count", userDTOs.size());
         response.put("filters", Map.of("role", role != null ? role : "all", "includeInactive", includeInactive));
         response.put("timestamp", java.time.Instant.now().toString());
         
@@ -81,10 +87,13 @@ public class AdminController {
         
         return adminService.getUserById(id)
                 .map(user -> {
+                    // Convert to DTO to exclude sensitive data like password
+                    UserDTO userDTO = new UserDTO(user);
+                    
                     Map<String, Object> response = new HashMap<>();
                     response.put("status", "success");
                     response.put("message", "User found successfully");
-                    response.put("data", user);
+                    response.put("data", userDTO);
                     response.put("userId", id);
                     response.put("timestamp", java.time.Instant.now().toString());
                     return ResponseEntity.ok(response);
@@ -155,10 +164,13 @@ public class AdminController {
         try {
             User user = adminService.updateUserStatus(id, active);
             
+            // Convert to DTO to exclude sensitive data like password
+            UserDTO userDTO = new UserDTO(user);
+            
             Map<String, Object> response = new HashMap<>();
             response.put("status", "success");
             response.put("message", "User status updated successfully");
-            response.put("data", user);
+            response.put("data", userDTO);
             response.put("userId", id);
             response.put("newStatus", active ? "active" : "inactive");
             response.put("action", "status_update");
@@ -432,11 +444,16 @@ public class AdminController {
         try {
             List<User> updatedUsers = adminService.bulkUpdateUserStatus(userStatusMap);
             
+            // Convert to DTOs to exclude sensitive data like passwords
+            List<UserDTO> userDTOs = updatedUsers.stream()
+                .map(UserDTO::new)
+                .toList();
+            
             Map<String, Object> response = new HashMap<>();
             response.put("status", "success");
             response.put("message", "Bulk user status update completed successfully");
-            response.put("data", updatedUsers);
-            response.put("count", updatedUsers.size());
+            response.put("data", userDTOs);
+            response.put("count", userDTOs.size());
             response.put("requestedCount", userStatusMap.size());
             response.put("action", "bulk_status_update");
             response.put("timestamp", java.time.Instant.now().toString());
