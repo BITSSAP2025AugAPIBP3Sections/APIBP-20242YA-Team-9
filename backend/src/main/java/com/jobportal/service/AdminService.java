@@ -3,6 +3,8 @@ package com.jobportal.service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -40,6 +42,15 @@ public class AdminService {
             return userRepository.findByRole(roleEnum);
         }
         return userRepository.findAll();
+    }
+
+    // Paginated version for getAllUsers
+    public Page<User> getAllUsers(String role, boolean includeInactive, Pageable pageable) {
+        if (role != null) {
+            Role roleEnum = Role.valueOf(role.toUpperCase());
+            return userRepository.findByRole(roleEnum, pageable);
+        }
+        return userRepository.findAll(pageable);
     }
 
     public Optional<User> getUserById(Long id) {
@@ -93,6 +104,14 @@ public class AdminService {
         return jobRepository.findAll();
     }
 
+    // Paginated version for getAllJobs
+    public Page<Job> getAllJobs(Boolean active, boolean includeExpired, Pageable pageable) {
+        if (active != null) {
+            return jobRepository.findByIsActive(active, pageable);
+        }
+        return jobRepository.findAll(pageable);
+    }
+
     @Transactional
     public Job updateJobStatus(Long id, boolean active) {
         Job job = jobRepository.findById(id)
@@ -121,6 +140,19 @@ public class AdminService {
             }
         }
         return applicationRepository.findAll();
+    }
+
+    // Paginated version for getAllApplications
+    public Page<Application> getAllApplications(String status, boolean includeArchived, Pageable pageable) {
+        if (status != null) {
+            try {
+                ApplicationStatus appStatus = ApplicationStatus.valueOf(status.toUpperCase());
+                return applicationRepository.findByStatus(appStatus, pageable);
+            } catch (IllegalArgumentException e) {
+                throw new RuntimeException("Invalid application status: " + status);
+            }
+        }
+        return applicationRepository.findAll(pageable);
     }
 
     @Transactional

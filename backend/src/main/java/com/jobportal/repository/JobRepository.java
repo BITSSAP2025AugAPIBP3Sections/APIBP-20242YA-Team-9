@@ -18,9 +18,12 @@ import java.util.List;
 @Repository
 public interface JobRepository extends JpaRepository<Job, Long> {
     List<Job> findByIsActiveTrue();
+    Page<Job> findByIsActiveTrue(Pageable pageable);
     List<Job> findByCompanyId(Long companyId);
+    Page<Job> findByCompanyId(Long companyId, Pageable pageable);
     long countByIsActiveTrue();
     List<Job> findByIsActive(Boolean isActive);
+    Page<Job> findByIsActive(Boolean isActive, Pageable pageable);
 
     @Modifying
     @Query("UPDATE Job j SET j.isActive = :active WHERE j.id = :jobId")

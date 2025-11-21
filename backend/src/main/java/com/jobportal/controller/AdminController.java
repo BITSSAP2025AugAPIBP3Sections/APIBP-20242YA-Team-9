@@ -3,6 +3,10 @@ package com.jobportal.controller;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -51,22 +55,42 @@ public class AdminController {
     @GetMapping("/users")
     public ResponseEntity<Map<String, Object>> getAllUsers(
             @RequestParam(required = false) String role,
-            @RequestParam(defaultValue = "false") boolean includeInactive) {
+            @RequestParam(defaultValue = "false") boolean includeInactive,
+            @RequestParam(required = false) Integer page,
+            @RequestParam(required = false) Integer size,
+            @RequestParam(required = false) String sort) {
         logger.debug("Getting all users with role: {} and includeInactive: {}", role, includeInactive);
-        List<User> users = adminService.getAllUsers(role, includeInactive);
-        
-        // Convert to DTOs to exclude sensitive data like passwords
-        List<UserDTO> userDTOs = users.stream()
-            .map(UserDTO::new)
-            .toList();
         
         Map<String, Object> response = new HashMap<>();
         response.put("status", "success");
         response.put("message", "Users retrieved successfully");
-        response.put("data", userDTOs);
-        response.put("count", userDTOs.size());
         response.put("filters", Map.of("role", role != null ? role : "all", "includeInactive", includeInactive));
         response.put("timestamp", java.time.Instant.now().toString());
+        
+        // Check if pagination parameters are provided
+        if (page != null && size != null) {
+            // Paginated response
+            Pageable pageable = createPageable(page, size, sort);
+            Page<User> userPage = adminService.getAllUsers(role, includeInactive, pageable);
+            
+            List<UserDTO> userDTOs = userPage.getContent().stream()
+                .map(UserDTO::new)
+                .toList();
+            
+            response.put("data", userDTOs);
+            response.put("count", userDTOs.size());
+            response.put("pagination", createPaginationMetadata(userPage));
+        } else {
+            // Non-paginated response (backward compatible)
+            List<User> users = adminService.getAllUsers(role, includeInactive);
+            
+            List<UserDTO> userDTOs = users.stream()
+                .map(UserDTO::new)
+                .toList();
+            
+            response.put("data", userDTOs);
+            response.put("count", userDTOs.size());
+        }
         
         return ResponseEntity.ok(response);
     }
@@ -203,17 +227,34 @@ public class AdminController {
     })
     public ResponseEntity<Map<String, Object>> getAllJobs(
             @Parameter(description = "Filter by active status (true/false), null for all") @RequestParam(required = false) Boolean active,
-            @Parameter(description = "Include expired jobs in results") @RequestParam(defaultValue = "false") boolean includeExpired) {
+            @Parameter(description = "Include expired jobs in results") @RequestParam(defaultValue = "false") boolean includeExpired,
+            @RequestParam(required = false) Integer page,
+            @RequestParam(required = false) Integer size,
+            @RequestParam(required = false) String sort) {
         logger.debug("Getting all jobs with active: {} and includeExpired: {}", active, includeExpired);
-        List<Job> jobs = adminService.getAllJobs(active, includeExpired);
         
         Map<String, Object> response = new HashMap<>();
         response.put("status", "success");
         response.put("message", "Jobs retrieved successfully");
-        response.put("data", jobs);
-        response.put("count", jobs.size());
         response.put("filters", Map.of("active", active != null ? active.toString() : "all", "includeExpired", includeExpired));
         response.put("timestamp", java.time.Instant.now().toString());
+        
+        // Check if pagination parameters are provided
+        if (page != null && size != null) {
+            // Paginated response
+            Pageable pageable = createPageable(page, size, sort);
+            Page<Job> jobPage = adminService.getAllJobs(active, includeExpired, pageable);
+            
+            response.put("data", jobPage.getContent());
+            response.put("count", jobPage.getContent().size());
+            response.put("pagination", createPaginationMetadata(jobPage));
+        } else {
+            // Non-paginated response (backward compatible)
+            List<Job> jobs = adminService.getAllJobs(active, includeExpired);
+            
+            response.put("data", jobs);
+            response.put("count", jobs.size());
+        }
         
         return ResponseEntity.ok(response);
     }
@@ -311,18 +352,34 @@ public class AdminController {
     })
     public ResponseEntity<Map<String, Object>> getAllApplications(
             @Parameter(description = "Filter by application status (PENDING, REVIEWED, APPROVED, REJECTED)") @RequestParam(required = false) String status,
-            @Parameter(description = "Include archived applications in results") @RequestParam(defaultValue = "false") boolean includeArchived) {
+            @Parameter(description = "Include archived applications in results") @RequestParam(defaultValue = "false") boolean includeArchived,
+            @RequestParam(required = false) Integer page,
+            @RequestParam(required = false) Integer size,
+            @RequestParam(required = false) String sort) {
         logger.debug("Getting all applications with status: {} and includeArchived: {}", status, includeArchived);
         try {
-            List<Application> applications = adminService.getAllApplications(status, includeArchived);
-            
             Map<String, Object> response = new HashMap<>();
             response.put("status", "success");
             response.put("message", "Applications retrieved successfully");
-            response.put("data", applications);
-            response.put("count", applications.size());
             response.put("filters", Map.of("status", status != null ? status : "all", "includeArchived", includeArchived));
             response.put("timestamp", java.time.Instant.now().toString());
+            
+            // Check if pagination parameters are provided
+            if (page != null && size != null) {
+                // Paginated response
+                Pageable pageable = createPageable(page, size, sort);
+                Page<Application> applicationPage = adminService.getAllApplications(status, includeArchived, pageable);
+                
+                response.put("data", applicationPage.getContent());
+                response.put("count", applicationPage.getContent().size());
+                response.put("pagination", createPaginationMetadata(applicationPage));
+            } else {
+                // Non-paginated response (backward compatible)
+                List<Application> applications = adminService.getAllApplications(status, includeArchived);
+                
+                response.put("data", applications);
+                response.put("count", applications.size());
+            }
             
             return ResponseEntity.ok(response);
         } catch (Exception e) {
@@ -518,5 +575,34 @@ public class AdminController {
             
             return ResponseEntity.badRequest().body(response);
         }
+    }
+
+    // Helper methods for pagination
+    private Pageable createPageable(Integer page, Integer size, String sort) {
+        int pageNumber = page != null ? page : 0;
+        int pageSize = size != null ? size : 10;
+        
+        if (sort != null && !sort.isEmpty()) {
+            String[] sortParams = sort.split(",");
+            String property = sortParams[0];
+            Sort.Direction direction = sortParams.length > 1 && sortParams[1].equalsIgnoreCase("desc") 
+                ? Sort.Direction.DESC : Sort.Direction.ASC;
+            return PageRequest.of(pageNumber, pageSize, Sort.by(direction, property));
+        }
+        
+        return PageRequest.of(pageNumber, pageSize);
+    }
+    
+    private Map<String, Object> createPaginationMetadata(Page<?> page) {
+        Map<String, Object> pagination = new HashMap<>();
+        pagination.put("currentPage", page.getNumber());
+        pagination.put("totalPages", page.getTotalPages());
+        pagination.put("totalElements", page.getTotalElements());
+        pagination.put("pageSize", page.getSize());
+        pagination.put("hasNext", page.hasNext());
+        pagination.put("hasPrevious", page.hasPrevious());
+        pagination.put("isFirst", page.isFirst());
+        pagination.put("isLast", page.isLast());
+        return pagination;
     }
 } 
