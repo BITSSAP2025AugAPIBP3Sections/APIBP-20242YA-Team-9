@@ -26,8 +26,9 @@ public class JobResolver {
     public List<Map<String, Object>> getAllJobs(
             @Argument String location,
             @Argument String title,
-            @Argument String salaryRange) {
-        List<Job> jobs = jobService.searchJobs(location, title, salaryRange);
+            @Argument String salaryRange,
+            @Argument String companyName) {
+        List<Job> jobs = jobService.searchJobs(location, title, salaryRange,companyName);
         return jobs.stream()
             .sorted((j1, j2) -> {
                 if (j1.getPostedAt() == null && j2.getPostedAt() == null) return 0;

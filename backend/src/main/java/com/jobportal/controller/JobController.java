@@ -133,9 +133,10 @@ public class JobController {
     public ResponseEntity<Map<String, Object>> getAllActiveJobs(
             @Parameter(description = "Filter by job location") @RequestParam(required = false) String location,
             @Parameter(description = "Filter by job title") @RequestParam(required = false) String title,
-            @Parameter(description = "Filter by salary range") @RequestParam(required = false) String salaryRange) {
+            @Parameter(description = "Filter by salary range") @RequestParam(required = false) String salaryRange,
+            @Parameter(description = "Filter by Company Name range") @RequestParam(required = false) String companyName) {
         try {
-            List<Job> jobs = jobService.searchJobs(location, title, salaryRange);
+            List<Job> jobs = jobService.searchJobs(location, title, salaryRange,companyName);
             List<Map<String, Object>> jobsList = jobs.stream()
                 .sorted((j1, j2) -> {
                     if (j1.getPostedAt() == null && j2.getPostedAt() == null) return 0;

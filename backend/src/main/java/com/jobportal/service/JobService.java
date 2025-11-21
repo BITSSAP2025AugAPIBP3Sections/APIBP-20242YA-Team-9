@@ -34,12 +34,15 @@ public class JobService {
     @Transactional
     public Job createJob(User company, Job job) {
         job.setCompany(company);
+        job.setCompanyName(company.getName());
         job.setActive(true);
         return jobRepository.save(job);
     }
 
     // Search jobs with filters
-    public List<Job> searchJobs(String location, String title, String salaryRange) {
+    public List<Job> searchJobs(String location, String title, String salaryRange,String companyName) {
+         logger.info("Searching jobs with filters - title: {}, location: {}, salaryRange: {}, companyName: {}",
+                title, location, salaryRange, companyName);
         logger.info("Searching jobs with filters - title: {}, location: {}, salaryRange: {}",
                 title, location, salaryRange);
 
@@ -47,7 +50,8 @@ public class JobService {
         return jobRepository.searchJobs(
                 title != null && !title.isEmpty() ? title : null,
                 location != null && !location.isEmpty() ? location : null,
-                salaryRange != null && !salaryRange.isEmpty() ? salaryRange : null
+                salaryRange != null && !salaryRange.isEmpty() ? salaryRange : null,
+                companyName != null && !companyName.isEmpty() ? companyName : null
         );
     }
 

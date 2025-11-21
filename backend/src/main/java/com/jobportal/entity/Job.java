@@ -29,6 +29,9 @@ public class Job {
     @JoinColumn(name = "company_id", nullable = false)
     private User company;
 
+    @Column(name = "company_name", nullable = false)
+    private String companyName;
+
     @Column(nullable = false)
     private String location;
 
@@ -82,6 +85,14 @@ public class Job {
 
     public void setCompany(User company) {
         this.company = company;
+    }
+
+    public String getCompanyName() {
+        return companyName;
+    }
+
+    public void setCompanyName(String companyName) {
+        this.companyName = companyName;
     }
 
     public String getLocation() {

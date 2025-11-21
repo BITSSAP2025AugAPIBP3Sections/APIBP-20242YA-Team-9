@@ -15,6 +15,7 @@ export default function JobsPage() {
   const [title, setTitle] = useState("")
   const [salaryRange, setSalaryRange] = useState("")
   const [jobs, setJobs] = useState([])
+  const [companyName, setCompanyName] = useState("")
   const [loading, setLoading] = useState(false)
   const [filterParams, setFilterParams] = useState(null)
   
@@ -26,6 +27,7 @@ export default function JobsPage() {
       if (title) params.title = title
       if (location) params.location = location
       if (salaryRange) params.salaryRange = salaryRange
+      if (companyName) params.companyName = companyName
       console.log("Filter params:", params);
       setFilterParams(params)
       const data = await api.getJobs(params)
@@ -41,6 +43,7 @@ export default function JobsPage() {
     setTitle("")
     setLocation("")
     setSalaryRange("")
+    setCompanyName("")
     setFilterParams(null)
   // Optionally re-fetch data or reset filterParams here
 };
@@ -70,6 +73,10 @@ export default function JobsPage() {
                 <div className="space-y-2">
                   <label className="text-sm font-medium">Designation</label>
                    <Input placeholder="Job title or designation" value={title} onChange={e => setTitle(e.target.value)} />
+                </div>
+                <div className="space-y-2">
+                 <label className="text-sm font-medium">Company Name</label>
+                 <Input placeholder="Company name" value={companyName} onChange={e => setCompanyName(e.target.value)} />
                 </div>
                 <div className="space-y-2">
                   <label className="text-sm font-medium">Location</label>
