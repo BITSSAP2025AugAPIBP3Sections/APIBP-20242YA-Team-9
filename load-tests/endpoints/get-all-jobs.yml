@@ -1,0 +1,12 @@
+config:
+  target: "https://job-portal-bwc9haethua7h0gw.malaysiawest-01.azurewebsites.net"
+  phases:
+    - duration: 3600
+      arrivalRate: 10
+scenarios:
+  - name: get-all-jobs
+    flow:
+      - get:
+          url: "api/v1/jobs"
+          headers:
+            Authorization: "Bearer {{ token }}"

@@ -1,0 +1,19 @@
+config:
+  target: "https://job-portal-bwc9haethua7h0gw.malaysiawest-01.azurewebsites.net"
+  phases:
+    - duration: 10
+      arrivalRate: 5
+    - duration: 20
+      arrivalRate: 300
+    - duration: 10
+      arrivalRate: 5
+scenarios:
+  - name: spike-login
+    flow:
+      - post:
+          url: "api/v1/auth/login"
+          json:
+            username: "souvik@example.com"
+            password: "password123"
+          expect:
+            - statusCode: 200

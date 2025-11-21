@@ -1,0 +1,14 @@
+config:
+  target: "https://job-portal-bwc9haethua7h0gw.malaysiawest-01.azurewebsites.net"
+  phases:
+    - duration: 20
+      arrivalRate: 15
+scenarios:
+  - name: get-all-users
+    flow:
+      - get:
+          url: "/api/v1/admin/users"
+          headers:
+            Authorization: "Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJzb3V2aWtAZXhhbXBsZS5jb20iLCJpZCI6Miwicm9sZSI6IlJPTEVfQURNSU4iLCJpYXQiOjE3NjM3MDU3MzcsImV4cCI6MTc2Mzc5MjEzN30.vvLaEwt-DH8wOquylfkbKBhecWngfXhfVGi-H_VVP3_9q6KiDQoG9UZhqEp_QND2_yxAOT3GCWqmPU-76kY-Sg"
+          expect:
+            - statusCode: 200

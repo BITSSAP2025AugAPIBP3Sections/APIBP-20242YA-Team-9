@@ -1,0 +1,31 @@
+config:
+  target: "https://job-portal-bwc9haethua7h0gw.malaysiawest-01.azurewebsites.net"
+  phases:
+    - duration: 60
+      arrivalRate: 50
+    - duration: 30
+      arrivalRate: 100
+    - duration: 30
+      arrivalRate: 0
+scenarios:
+  - name: stress-create-jobs
+    flow:
+      - post:
+          url: "api/v1/jobs"
+          headers:
+            Authorization: "Bearer {{ token }}"
+            Content-Type: "application/json"
+          json:
+              "title": "Software Engineer"
+              "location": "Remote"
+              "salaryRange": "100000-120000"
+              "description": "Job description 5"
+              "requirements": [
+                "Java",
+                "Spring Boot",
+                "REST APIs"
+              ]
+              "responsibilities": [
+                "Develop backend",
+                "Write tests"
+              ]
