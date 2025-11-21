@@ -3,7 +3,13 @@ package com.jobportal.repository;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
+import org.springframework.data.domain.Sort;
 
 import com.jobportal.entity.Job;
 
@@ -37,4 +43,21 @@ public interface JobRepository extends JpaRepository<Job, Long> {
             "AND (:salaryRange IS NULL OR j.salaryRange = :salaryRange) " +
             "AND (:companyName IS NULL OR LOWER(j.companyName) LIKE LOWER(CONCAT('%', :companyName, '%')))")
     List<Job> searchJobs(String title, String location, String salaryRange, String companyName);
+
+    @Query("""
+    SELECT j FROM Job j
+    WHERE (:title IS NULL OR j.title LIKE %:title%)
+      AND (:location IS NULL OR j.location LIKE %:location%)
+      AND (:salaryRange IS NULL OR j.salaryRange = :salaryRange)
+      AND (:companyName IS NULL OR j.company.name LIKE %:companyName%)
+      AND j.isActive = true
+""")
+Page<Job> searchJobsPaginated(
+        @Param("title") String title,
+        @Param("location") String location,
+        @Param("salaryRange") String salaryRange,
+        @Param("companyName") String companyName,
+        Pageable pageable
+);
+
 }
