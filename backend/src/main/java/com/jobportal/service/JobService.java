@@ -1,6 +1,9 @@
 package com.jobportal.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -32,6 +35,11 @@ public class JobService {
 
     // Create a new job
     @Transactional
+    @Caching(evict = {
+        @CacheEvict(value = "jobs", allEntries = true),
+        @CacheEvict(value = "activeJobs", allEntries = true),
+        @CacheEvict(value = "userJobs", key = "#company.id")
+    })
     public Job createJob(User company, Job job) {
         job.setCompany(company);
         job.setCompanyName(company.getName());
@@ -40,6 +48,8 @@ public class JobService {
     }
 
     // Search jobs with filters
+    @Cacheable(value = "jobs", key = "#location + '_' + #title + '_' + #salaryRange + '_' + #companyName", 
+               unless = "#result == null || #result.isEmpty()")
     public List<Job> searchJobs(String location, String title, String salaryRange,String companyName) {
          logger.info("Searching jobs with filters - title: {}, location: {}, salaryRange: {}, companyName: {}",
                 title, location, salaryRange, companyName);
@@ -56,12 +66,18 @@ public class JobService {
     }
 
     // Get job by ID
+    @Cacheable(value = "job", key = "#id", unless = "#result == null || !#result.isPresent()")
     public Optional<Job> getJobById(Long id) {
         return jobRepository.findById(id);
     }
 
     // Update job
     @Transactional
+    @Caching(evict = {
+        @CacheEvict(value = "job", key = "#jobId"),
+        @CacheEvict(value = "jobs", allEntries = true),
+        @CacheEvict(value = "userJobs", key = "#companyId")
+    })
     public Job updateJob(Long companyId, Long jobId, Job updatedJob) {
         Job existingJob = jobRepository.findById(jobId)
                 .orElseThrow(() -> new RuntimeException("Job not found"));
@@ -80,6 +96,12 @@ public class JobService {
 
     // Delete job
     @Transactional
+    @Caching(evict = {
+        @CacheEvict(value = "job", key = "#jobId"),
+        @CacheEvict(value = "jobs", allEntries = true),
+        @CacheEvict(value = "activeJobs", allEntries = true),
+        @CacheEvict(value = "userJobs", key = "#companyId")
+    })
     public void deleteJob(Long companyId, Long jobId) {
         Job job = jobRepository.findById(jobId)
                 .orElseThrow(() -> new RuntimeException("Job not found"));
@@ -94,11 +116,13 @@ public class JobService {
     }
 
     // Get company's jobs
+    @Cacheable(value = "userJobs", key = "#companyId", unless = "#result == null || #result.isEmpty()")
     public List<Job> getJobsByCompany(Long companyId) {
         return jobRepository.findByCompanyId(companyId);
     }
 
     // Get applications for a job
+    @Cacheable(value = "jobApplications", key = "#jobId", unless = "#result == null || #result.isEmpty()")
     public List<Application> getJobApplications(Long companyId, Long jobId) {
         Job job = jobRepository.findById(jobId)
                 .orElseThrow(() -> new RuntimeException("Job not found"));

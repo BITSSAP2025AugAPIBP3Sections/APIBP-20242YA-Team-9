@@ -2,6 +2,9 @@ package com.jobportal.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -97,6 +100,8 @@ public class ApplicantService {
     }
 
     // Search jobs with filters
+    @Cacheable(value = "activeJobs", key = "#location + '_' + #title + '_' + #salaryRange", 
+               unless = "#result == null || #result.isEmpty()")
     public List<Job> searchJobs(String location, String title, String salaryRange) {
         // For now, return all active jobs. You can implement more sophisticated search later
         return jobRepository.findByIsActiveTrue();
@@ -104,6 +109,10 @@ public class ApplicantService {
 
     // Apply for a job
     @Transactional
+    @Caching(evict = {
+        @CacheEvict(value = "applications", key = "#applicantId"),
+        @CacheEvict(value = "jobApplications", key = "#jobId")
+    })
     public Application applyToJob(Long applicantId, Long jobId, String resumeUrl) {
         if (resumeUrl == null || resumeUrl.trim().isEmpty()) {
             throw new RuntimeException("Resume is required to apply for a job");
@@ -134,6 +143,7 @@ public class ApplicantService {
     }
 
     // Get applicant's applications
+    @Cacheable(value = "applications", key = "#applicantId", unless = "#result == null || #result.isEmpty()")
     public List<Application> getApplicationsByApplicant(Long applicantId) {
         User applicant = userRepository.findById(applicantId)
                 .orElseThrow(() -> new RuntimeException("Applicant not found"));
@@ -154,6 +164,10 @@ public class ApplicantService {
 
     // Withdraw application
     @Transactional
+    @Caching(evict = {
+        @CacheEvict(value = "applications", key = "#applicantId"),
+        @CacheEvict(value = "jobApplications", allEntries = true)
+    })
     public void withdrawApplication(Long applicantId, Long applicationId) {
         Application application = applicationRepository.findById(applicationId)
                 .orElseThrow(() -> new RuntimeException("Application not found"));
