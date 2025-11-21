@@ -248,10 +248,13 @@ public class JobController {
         try {
             Job updatedJob = jobService.updateJob(userDetails.getUser().getId(), id, job);
             
+            // Convert to DTO to exclude sensitive data like password
+            com.jobportal.dto.JobDTO jobDTO = new com.jobportal.dto.JobDTO(updatedJob);
+            
             Map<String, Object> response = new HashMap<>();
             response.put("status", "success");
             response.put("message", "Job updated successfully");
-            response.put("data", updatedJob);
+            response.put("data", jobDTO);
             response.put("jobId", id);
             response.put("action", "update");
             response.put("timestamp", java.time.Instant.now().toString());
@@ -351,10 +354,13 @@ public class JobController {
         try {
             Job updatedJob = jobService.updateJobActiveStatus(userDetails.getUser().getId(), id, active);
             
+            // Convert to DTO to exclude sensitive data like password
+            com.jobportal.dto.JobDTO jobDTO = new com.jobportal.dto.JobDTO(updatedJob);
+            
             Map<String, Object> response = new HashMap<>();
             response.put("status", "success");
             response.put("message", "Job status updated successfully");
-            response.put("data", updatedJob);
+            response.put("data", jobDTO);
             response.put("jobId", id);
             response.put("newStatus", active ? "active" : "inactive");
             response.put("action", "status_update");
