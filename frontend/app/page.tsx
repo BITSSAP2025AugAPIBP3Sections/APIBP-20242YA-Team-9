@@ -20,6 +20,7 @@ export default function Home() {
   const [jobs, setJobs] = useState([])
   const [loading, setLoading] = useState(false)
   const [filterParams, setFilterParams] = useState(null)
+  const [companyName, setCompanyName] = useState("")
   const { user, logout } = useAuth()
   const router=useRouter()
   const handleSubmit = async (e?: React.FormEvent) => {
@@ -30,6 +31,7 @@ export default function Home() {
       if (title) params.title = title
       if (location) params.location = location
       if (salaryRange) params.salaryRange = salaryRange
+      if (companyName) params.companyName = companyName
       console.log("Filter params:", params);
       setFilterParams(params)
       const data = await api.getJobs(params)
@@ -67,6 +69,9 @@ export default function Home() {
               {(user?.role == 'APPLICANT' || user?.role == undefined) ? (<form className="flex flex-col gap-2 md:flex-row" onSubmit={handleSubmit}>
                 <div className="flex-1">
                   <Input placeholder="Job title or keywords" value={title} onChange={e => setTitle(e.target.value)} />
+                </div>
+                <div className="flex-1">
+                  <Input placeholder="Company Name" value={companyName} onChange={e => setCompanyName(e.target.value)} />
                 </div>
                 <div className="flex-1">
                   <LocationCombobox 
