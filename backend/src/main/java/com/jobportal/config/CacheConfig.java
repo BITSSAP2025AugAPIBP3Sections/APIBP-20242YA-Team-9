@@ -29,7 +29,12 @@ public class CacheConfig {
             "applications",      // Applications cache
             "userJobs",          // User's jobs cache
             "jobApplications",   // Job applications cache
-            "activeJobs"         // Active jobs cache
+            "activeJobs",        // Active jobs cache
+            "jobsPaginated",     // Paginated jobs cache
+            "applicationsPaginated",  // Paginated applications cache
+            "userJobsPaginated", // Paginated user jobs cache
+            "users",             // Users cache
+            "companies"          // Companies cache
         );
         
         // Default cache configuration

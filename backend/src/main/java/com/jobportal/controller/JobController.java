@@ -1,6 +1,7 @@
 package com.jobportal.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -22,6 +23,11 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
+import org.springframework.data.domain.Sort;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -131,68 +137,60 @@ public class JobController {
     })
     @GetMapping
     public ResponseEntity<Map<String, Object>> getAllActiveJobs(
-            @Parameter(description = "Filter by job location") @RequestParam(required = false) String location,
-            @Parameter(description = "Filter by job title") @RequestParam(required = false) String title,
-            @Parameter(description = "Filter by salary range") @RequestParam(required = false) String salaryRange,
-            @Parameter(description = "Filter by Company Name range") @RequestParam(required = false) String companyName) {
-        try {
-            List<Job> jobs = jobService.searchJobs(location, title, salaryRange,companyName);
-            List<Map<String, Object>> jobsList = jobs.stream()
-                .sorted((j1, j2) -> {
-                    if (j1.getPostedAt() == null && j2.getPostedAt() == null) return 0;
-                    if (j1.getPostedAt() == null) return 1;
-                    if (j2.getPostedAt() == null) return -1;
-                    return j2.getPostedAt().compareTo(j1.getPostedAt()); // Descending order
-                })
-                .map(job -> {
-                    // Format the date as ISO-8601 string (2023-05-01T00:00:00Z format)
-                    String formattedDate = null;
-                    if (job.getPostedAt() != null) {
-                        // Convert LocalDateTime to proper ISO-8601 format with Z suffix for UTC
-                        formattedDate = job.getPostedAt().toString().replace("T", "T").concat("Z");
-                    }
+            @RequestParam(required = false) String location,
+            @RequestParam(required = false) String title,
+            @RequestParam(required = false) String salaryRange,
+        @RequestParam(required = false) String companyName,
+        @PageableDefault(page = 0, size = 5, sort = "postedAt", direction = Sort.Direction.DESC)
+        Pageable pageable
+) {
 
-                    Map<String, Object> jobMap = new HashMap<>();
-                    jobMap.put("id", String.valueOf(job.getId()));
-                    jobMap.put("title", job.getTitle());
-                    jobMap.put("company", Map.of(
-                        "name", job.getCompany().getName(),
-                        "bio", job.getCompany().getBio() != null ? job.getCompany().getBio() : "No Description"
-                    ));
-                    jobMap.put("location", job.getLocation());
-                    jobMap.put("salaryRange", job.getSalaryRange());
-                    jobMap.put("description", job.getDescription());
-                    jobMap.put("postedAt", formattedDate);
-                    jobMap.put("requirements", job.getRequirements());
-                    jobMap.put("responsibilities", job.getResponsibilities());
-                    jobMap.put("applicationsCount", jobService.getApplicationsCountForJob(job.getId()));
-                    jobMap.put("active", job.isActive());
-                    
-                    return jobMap;
-                }).toList();
-            
-            Map<String, Object> response = new HashMap<>();
-            response.put("status", "success");
-            response.put("message", "Jobs retrieved successfully");
-            response.put("data", jobsList);
-            response.put("count", jobsList.size());
-            response.put("filters", Map.of(
-                "location", location != null ? location : "all",
-                "title", title != null ? title : "all",
-                "salaryRange", salaryRange != null ? salaryRange : "all"
-            ));
-            response.put("timestamp", java.time.Instant.now().toString());
-            
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            Map<String, Object> response = new HashMap<>();
-            response.put("status", "error");
-            response.put("message", "Failed to retrieve jobs: " + e.getMessage());
-            response.put("timestamp", java.time.Instant.now().toString());
-            
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
-        }
-    }
+    Page<Job> jobPage = jobService.searchJobsPaginated(location, title, salaryRange, companyName, pageable);
+
+    List<Map<String, Object>> jobsList = jobPage.getContent().stream().map(job -> {
+        String formattedDate = job.getPostedAt() != null
+                ? job.getPostedAt().toString().concat("Z")
+                : null;
+
+        return Map.<String, Object>ofEntries(
+            Map.entry("id", job.getId().toString()),
+            Map.entry("title", job.getTitle()),
+            Map.entry("company", Map.of(
+                "name", job.getCompany().getName(),
+                "bio", job.getCompany().getBio() != null ? job.getCompany().getBio() : "No Description"
+            )),
+            Map.entry("location", job.getLocation()),
+            Map.entry("salaryRange", job.getSalaryRange()),
+            Map.entry("description", job.getDescription()),
+            Map.entry("postedAt", formattedDate),
+            Map.entry("requirements", job.getRequirements()),
+            Map.entry("responsibilities", job.getResponsibilities()),
+            Map.entry("applicationsCount", jobService.getApplicationsCountForJob(job.getId())),
+            Map.entry("active", job.isActive())
+        );
+    }).toList();
+
+    Map<String, Object> response = new HashMap<>();
+    response.put("status", "success");
+    response.put("message", "Jobs retrieved successfully");
+    response.put("data", jobsList);
+    response.put("count", jobsList.size());
+    response.put("page", jobPage.getNumber());
+    response.put("size", jobPage.getSize());
+    response.put("totalPages", jobPage.getTotalPages());
+    response.put("totalElements", jobPage.getTotalElements());
+    response.put("filters", Map.of(
+            "location", location != null ? location : "all",
+            "title", title != null ? title : "all",
+            "salaryRange", salaryRange != null ? salaryRange : "all",
+            "companyName", companyName != null ? companyName : "all"
+    ));
+    response.put("timestamp", java.time.Instant.now().toString());
+
+    return ResponseEntity.ok(response);
+}
+
+
 
     // Get job by ID (Public)
     @GetMapping("/{id}")

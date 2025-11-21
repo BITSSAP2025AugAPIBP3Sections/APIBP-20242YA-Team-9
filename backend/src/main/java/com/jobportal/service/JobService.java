@@ -14,6 +14,11 @@ import com.jobportal.enums.ApplicationStatus;
 import com.jobportal.repository.ApplicationRepository;
 import com.jobportal.repository.JobRepository;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
+import org.springframework.data.domain.Sort;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -213,6 +218,31 @@ public class JobService {
         logger.info("No status update needed. Status already {}", newStatus);
         return application;
     }
+
+    @Cacheable(
+    value = "jobsPaginated",
+    key = "#location + '_' + #title + '_' + #salaryRange + '_' + #companyName + '_' + #pageable.pageNumber + '_' + #pageable.pageSize + '_' + #pageable.sort",
+    unless = "#result == null || #result.isEmpty()"
+)
+public Page<Job> searchJobsPaginated(
+        String location,
+        String title,
+        String salaryRange,
+        String companyName,
+        Pageable pageable
+) {
+    logger.info("Paginated job search: page={}, size={}, sort={}", 
+                pageable.getPageNumber(), pageable.getPageSize(), pageable.getSort());
+
+    return jobRepository.searchJobsPaginated(
+            title != null && !title.isEmpty() ? title : null,
+            location != null && !location.isEmpty() ? location : null,
+            salaryRange != null && !salaryRange.isEmpty() ? salaryRange : null,
+            companyName != null && !companyName.isEmpty() ? companyName : null,
+            pageable
+    );
+}
+
 
     public long getApplicationsCountForJob(Long jobId) {
         return applicationRepository.countByJobId(jobId);
